@@ -9,15 +9,16 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r, warning=FALSE}
 library(future)
 library(tidyverse)
 library(furrr)
 library(DT)
+library(ggplot2)
 ```
+## Exercises for the first practical
 
-
-* Sample 100 samples from a standard normal distribution.
+### a), b) 
 
 ```{r}
 
@@ -43,29 +44,22 @@ NEW
 ```{r}
 NEW%>% colMeans()
 ```
+### c)
 
 ```{r}
-NEW %>% filter(cov==0)
-```
-```{r}
-library(ggplot2)
-#factor(NEW$cov,levels = c("not","yes"))
 limits <- aes(ymax = NEW$upper, ymin = NEW$lower)
-NEW %>% mutate(covered = as.factor(cov)) %>% 
-ggplot(aes(y=mean, x=1:100, colour = covered)) + 
-  geom_hline(aes(yintercept = 0), color = "dark grey", size = 2) + 
+
+
+NEW %>% mutate(covered_by_95_CI = as.factor(cov)) %>% 
+ggplot(aes(y=mean, x=1:100, colour = covered_by_95_CI)) + 
+  geom_hline(aes(yintercept = 0), color = "black", size = 2) + 
   geom_pointrange(limits) + 
   xlab("Simulations") +
-  ylab("Means and 95% Confidence Intervals")+ggtitle("The 95% confidence intervals")
+  ylab("Means and 95% Confidence Intervals")+ggtitle("The Simulation study of the 95% confidence intervals")+scale_color_manual(labels = c("not covered (4/100)","covered (96/100)"), values = c("maroon","lightseagreen"))
 ```
 
-
+### d)
 
 ```{r}
 NEW %>% round(4) %>% filter((lower>0 & upper>0 )| (lower<0 & upper<0) ) %>%select(-cov) %>% DT::datatable()
 ```
-
-```{r}
-
-```
-
