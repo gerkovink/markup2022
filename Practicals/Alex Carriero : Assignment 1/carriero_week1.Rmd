@@ -7,7 +7,7 @@ output: pdf_document
 
 ## Monte Carlo Simulation Exercise 
 ```{r}
-# sample 100 samples of size 100. 
+# generate 100 samples of size 100. 
 n = 100 
 set.seed(8119)
 samples <- matrix(0, nrow= 100, ncol=100)
