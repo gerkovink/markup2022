@@ -1,0 +1,55 @@
+---
+title: "Excersie 1"
+author: "Florian van Leeuwen"
+date: "9/16/2022"
+output: pdf_document
+---
+
+```{r, packges}
+require(ggplot2)
+```
+
+
+## 8. Monte Carlo simulation exercisec
+```{r}
+# function to create CI for a normal distribution
+ci <- function(n, seed){
+  set.seed(seed)
+  CI <- matrix(nrow = n, ncol = 4)
+  for (i in 1:n){
+    samples <- c()
+    samples <- rnorm(n)
+    mean <- mean(samples)
+    SE <- sqrt(sd(samples)/n)
+    lower <- mean - 1.96*SE 
+    upper <- mean + 1.96*SE 
+    CI[i,1] <- lower
+    CI[i,2] <- upper
+    CI[i,3] <- mean
+    CI[i,4] <- i
+  }
+  return(CI)
+}
+```
+```{r}
+# simulate data 
+data_ci <- ci(100,123)
+```
+
+```{r}
+# add names and change to df for ggplot
+colnames(data_ci) <- c("L", "U", "M", "N")
+data_ci <- as.data.frame(data_ci)
+
+# Create indictor for if 0 in the CI
+data_ci2 <- data_ci %>% 
+  mutate(outside = as.factor(ifelse(U < 0 | L > 0, 1, 0))) 
+```
+
+```{r}
+# make a plot
+ggplot(data_ci2, aes(x = N, y = M, color = outside)) +
+  geom_point(size = 4) +
+  geom_errorbar(aes(ymax = U, ymin = L))
+```
+
