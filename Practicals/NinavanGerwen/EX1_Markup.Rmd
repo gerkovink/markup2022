@@ -1,0 +1,72 @@
+---
+title: "Monte Carlo Simulation & Confidence Intervals"
+author: "Nina van Gerwen (1860852)"
+date: "2022-09-14"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Simulation
+
+The simulation is done by the following code.
+
+```{r simulation}
+## set seed
+set.seed(1248)
+## set number of simulations
+nsim <- 100
+## create an empty data set for the statistics we want
+statistics <- as.data.frame(matrix(data = NA, nrow = nsim, ncol = 4))
+## create a for loop where in each loop:
+for(i in 1:nsim){
+  ## 100 samples are gained from a standard normal distribution
+  temp_save <- rnorm(100)
+  ## calculate the mean (i.e., the bias) of this sample
+  statistics[i, 1] <- mean(temp_save)
+  ## calculate the standard error of this sample
+  statistics[i, 2] <- sd(temp_save)/sqrt(100)
+  ## calculate the lower bound 95% CI
+  statistics[i, 3] <- statistics[i, 1] - 1.96 * statistics[i, 2]
+  ## calculate the upper bound 95% CI
+  statistics[i, 4] <- statistics[i, 1] + 1.96 * statistics[i, 2]
+  ## and save all those values in the correct place
+}
+```
+
+### Confidence interval plot:
+
+```{r plot}
+library(tidyverse)
+library(ggplot2)
+
+statistics$Group <- ifelse(statistics$V3 > 0 & statistics$V4 > 0 
+                           | statistics$V3 < 0 & statistics$V4 < 0, FALSE, TRUE)
+
+ciplot <- ggplot(data = statistics, aes(x = 1:100, y = V1, col = Group)) +
+    geom_point() +
+  geom_abline(col = "blue", slope = 0, intercept = 0) +
+  geom_errorbar(ymin = statistics$V3, ymax = statistics$V4) +
+  ylim(-0.5, 0.5)
+
+ciplot
+```
+
+### Table for simulated samples that were significantly from 0
+
+Due to how my for loop is coded, I can't get all the simulated samples (they
+were not saved to save space). Instead have this very not useful table
+that shows the mean, standard error and confidence interval of the
+simulated samples that did not contain the population value.
+
+```{r}
+library(tableone)
+
+statistics %>%
+  subset(., Group == FALSE)
+```
+
