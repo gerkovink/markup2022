@@ -1,0 +1,67 @@
+---
+title: "Monte Carlo Exercise"
+author: "Lotte Mensink"
+date: "9/26/2022"
+output: html_document
+---
+
+First, we sample 100 samples from a standard normal distribution. It is important to set a seed before drawing random samples. 
+
+```{r}
+set.seed(123)
+nsamp <- 100
+samples <- list(nsamp)
+
+for (i in 1:nsamp){
+  s <- rnorm(1000)
+  samples[[i]] <- s
+}
+```
+
+For each of these samples, calculate the mean, the absolute bias, the standard error and the 95% confidence interval. 
+
+```{r}
+means <- c()
+bias <- c()
+se <- c()
+ll <- c()  
+ul <- c()
+  
+for (i in 1:nsamp){
+  data <- samples[[i]]
+  means[i] <- mean(data)
+  bias[i] <- abs(mean(data) - 0)
+  se[i] <- 1/sqrt(length(data))
+  int <- qt(0.975, length(data)-1) * se[i]
+  ll[i] <- mean(data) - int
+  ul[i] <- mean(data) + int
+}
+
+results <- as.data.frame(cbind(means, bias, se, ll, ul))
+
+colMeans(results)
+```
+
+Create a plot that demonstrates the following:      
+*“A replication of the procedure that generates a 95% confidence interval that is centered around the sample mean would cover the population value at least 95 out of 100 times” (Neyman, 1934)*
+
+```{r, message = FALSE}
+library(dplyr)
+results <- results %>%
+  mutate(Covered = ll < 0 & ul > 0)
+
+library(ggplot2)
+limits <- aes(ymax = ul, ymin = ll)
+ggplot(results, aes(x = 1:100, y = means, color = Covered)) +
+    geom_pointrange(limits) + 
+    xlab("Simulations") +
+    ylab("95% Confidence Intervals")
+```
+
+Present a table containing all simulated samples for which the resulting confidence interval does not contain the population value.
+
+```{r}
+results %>%
+  filter(Covered == FALSE)
+```
+
