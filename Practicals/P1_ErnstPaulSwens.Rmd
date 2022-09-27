@@ -1,0 +1,83 @@
+---
+title: "Practicum 1"
+author: "Ernst Paul Swens"
+date: "Tuesday 27 september"
+output: html_notebook
+---
+
+```{r}
+version
+```
+
+# Simulating a slot machine 
+
+```{r}
+# symbols of the slot machine
+symbols <- c("diamond", "lemon", "melon", "heart", "7", "bell", "horseshoe", "cherry", "bar")
+
+slotmachine <- function(n.plays, money) {
+   # initiate counter, money, and results 
+   n <- 1
+   money <- money
+   results <- matrix(0, n.plays, 2, dimnames = list(NULL, c("n", "money")))
+   
+   # while the maximum number of plays 
+   while (n <= n.plays) {
+      
+      # if there is money to spent, keep on playing
+      if (money > 0) {
+         sample <- sample(symbols, 3, replace = TRUE)
+         n.unique <- length(unique(sample))
+         
+         if (n.unique == 3) {
+            money <- money - 1
+         } else if ((n.unique == 2)) {
+            money <- money + 1
+         } else {
+            money <- money + 2
+         }
+      }
+      
+      # keep track on the money and turn
+      results[n,"money"] <- money
+      results[n,"n"] <- n
+      n = n + 1
+   }
+   
+   return(results)
+}
+```
+
+```{r}
+# simulation parameters
+n.sim <- 100
+n.plays <- 250 
+money <- 50
+
+# fix the seed
+set.seed(1)
+
+# run the simulation n.sim times
+simulation <- replicate(n.sim, slotmachine(n.plays, money), simplify = FALSE)
+
+# add a simulation index
+results <- cbind(do.call(rbind, simulation), sim = rep(1:n.sim, each = n.plays))
+results <- as.data.frame(results)
+```
+
+```{r}
+# create a spaghetti plot of the simulation results
+
+library(ggplot2)
+
+ggplot(results, aes(x = n, y = money)) +
+   geom_line(size=.5, aes(group = sim, colour = as.factor(sim))) +  
+   geom_smooth(formula = y ~ s(x, bs = "cs"), method = 'gam', se = FALSE, colour="black", size=2) + 
+   theme_minimal() + 
+   theme(legend.position="none") +
+   xlab("turns played in the slot machine")
+```
+
+
+
+
