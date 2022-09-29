@@ -1,0 +1,180 @@
+---
+title: "Tidy Tuesday 2021 - Week 35"
+subtitle : "Taxonomic relationships of lemurs"
+author: "Christine Hedde - von Westernhagen"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output: 
+  html_document:
+    theme: paper
+    highlight: pygment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.align = "center",
+                      fig.pos = "H")
+
+library(dplyr)     # data wrangling
+library(readr)     # data reading
+library(janitor)   # clean variable names
+library(stringr)   # string editing
+library(tidygraph) # network operations
+library(ggraph)    # network plotting
+library(ggtext)    # text edits in plot
+```
+
+# Goal
+
+**Make a network plot of hybrid species relations: Which species are connected to one another through an offspring?**
+
+# Data Exploration
+
+A description of the data can be found on [Github](https://github.com/rfordatascience/tidytuesday/tree/master/data/2021/2021-08-24).
+
+```{r data_expl}
+# Load data from tidytuesday repository
+data_raw <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-08-24/lemur_data.csv')
+
+# How many hybrids are there?
+data_raw %>% 
+  distinct(dlc_id, hybrid) %>% 
+  count(hybrid)
+
+# How many parent species are there?
+data_raw %>% 
+  distinct(dam_taxon) %>% 
+  nrow()
+
+data_raw %>% 
+  distinct(sire_taxon) %>%
+  nrow()
+
+# What are the taxon combinations of the parents?
+data_raw %>%
+  distinct(dlc_id, hybrid, dam_taxon, sire_taxon) %>% 
+  filter(hybrid=="Sp") %>% 
+  count(dam_taxon, sire_taxon) %>% 
+  arrange(desc(n))
+```
+
+To conclude: 173 of 2270 individuals are hybrids of two species (`hybrid` = Sp). For their distinct 27 female and 26 male parent-species we can observe 28 pairwise combinations. However, the species of the male parent is often unknown. Most of the parents are hybrids themselves (EUL).
+
+# Make it a network object
+
+```{r make_net}
+# make an edge list and turn into tidygraph network object
+net <- data_raw %>% 
+  # collapse time series
+  distinct(dlc_id, hybrid, dam_taxon, sire_taxon) %>% 
+  filter(hybrid=="Sp") %>% 
+  # weighted ties between parent species -> edge list
+  count(dam_taxon, sire_taxon) %>% 
+  arrange(desc(n)) %>% 
+  # rename to conform with tidygraph
+  rename(from = dam_taxon, to = sire_taxon) %>% 
+  as_tbl_graph(directed = FALSE)
+
+# read in translation table of taxonomic codes
+taxon_codes <- 
+  read_delim("taxon_codes.csv", "|", trim_ws = TRUE) %>% 
+  clean_names() %>% 
+  select(2:4) %>% 
+  tail(-1)
+
+# edits to the final network data set
+net_final <- net %>% 
+  activate(nodes) %>% 
+  rename(taxon = name) %>% 
+  left_join(taxon_codes) %>% 
+  mutate(common_name = case_when(taxon == "EUL" ~ "Eulemur hybrid",
+                                 taxon == "VAR" ~ "Varecia hybrid",
+                                 is.na(common_name) ~ "Unknown",
+                                 TRUE ~ common_name) %>% 
+           str_wrap(., 14),
+         family = case_when(taxon %in% c("CMEAD", "MMUR", "MZAZ") ~ "Cheirogaleidae",
+                            taxon == "DMAD" ~ "Daubentoniidae",
+                            str_detect(taxon, "^E|^H|^LC|^V") ~ "Lemuridae",
+                            taxon == "GMOH" ~ "Galago",
+                            taxon == "LTAR" ~ "Loris",
+                            taxon %in% c("NCOU", "NPYG") ~ "Nycticebus",
+                            taxon == "OGG" ~ "Otolemur",
+                            taxon == "PCOQ" ~ "Indriidae",
+                            taxon == "PPOT" ~ "Perodicticus",
+                            TRUE ~ "Unknown"),
+         species = ifelse(family != "Unknown", 
+                          str_extract_all(latin_name, "^[A-Z][a-z]+"),
+                          "Unknown"),
+         degree = centrality_degree(weights = n, loops = TRUE))
+
+net_final %>% 
+  activate(nodes) %>% 
+  as_tibble()
+
+net_final %>% 
+  activate(edges) %>% 
+  as_tibble()
+```
+
+# Plot
+
+```{r plot, fig.width=9.8, fig.height=10.5, fig.cap="Network of hybrid lemurs' parental species", fig.alt=fig.alt, warning=FALSE}
+
+fig.alt <- "The Duke Lemur Center has hosted more than 2000 Lemurs across 27 species since 1968. Around eight percent of the animals are hybrids of different species. The graph shows the taxonomic relations between their parents, who are often hybrids themselves, as a circular network consisting of 13 nodes. Most connections run between hybrid species. However, in many cases the father's species could not be identified, 'pater semper incertus est'."
+
+# pick some nice colors
+pal <- c("#FDF8E5", "#EBA843", "#ff6b13", "#7D5F45", "#42474B", "#B2C438", "#0B5587")
+
+################ SET SEED TO FIX LAYOUT OF THE GRAPH ###################
+set.seed(999)                                                          #
+layout <- create_layout(net_final, layout = "igraph", algorithm = "fr")#
+########################################################################
+
+# make plot
+ggraph(layout) +
+  geom_edge_link(aes(width = stat(index)-(stat(index))^2, color = n, alpha = n+0.5),
+                 lineend = "round",
+                 start_cap = circle(3, "mm"),
+                 end_cap = circle(3, "mm")) +
+  geom_edge_loop(aes(width = sqrt(stat(index))-stat(index), color = n, alpha = n+0.5),
+                 lineend = "round",
+                 start_cap = circle(3, "mm"),
+                 end_cap = circle(3, "mm")) +
+  geom_node_text(aes(label = common_name),
+                 size = 4, 
+                 color = pal[1]) +
+  scale_edge_color_gradientn(colors = rev(pal[1:3])) +
+  scale_edge_alpha(guide = "none") +
+  scale_edge_width(range = c(.7, 2.5), 
+                   guide = "none") +
+  guides(edge_color = guide_edge_colorbar(title = "Number of offspring", 
+                                          title.position = "top",
+                                          barwidth = 7,
+                                          barheight = .5)) +
+  labs(title = "Lemur Hybrids", 
+       subtitle = "The Duke Lemur Center has hosted more than 2000 Lemurs across 27 species since 1968. Around eight percent of the animals are hybrids of different species. The graph shows the taxonomic relations between their parents, who are often hybrids themselves. However, in many cases the father's species could not be identified, 'pater semper incertus est'.",
+       caption = "Data source: The Duke Lemur Center, provided by Jesse Mostipak\nPlot: @christinehvw") +
+  expand_limits(x = c(-1.1, 1.1)) +
+  theme_graph() +
+  theme(plot.background = element_rect(fill = pal[5]),
+        text = element_text(size = 11, 
+                            color = pal[1]),
+        plot.margin = unit(c(0,5,2,2), "mm"),
+        legend.position = c(0.075, 0.96), 
+        legend.direction = "horizontal",
+        legend.title.align = 0.5,
+        plot.title = element_textbox_simple(size = 28, 
+                                            color = pal[1],
+                                            margin = margin(4,4,4,1, "mm")),
+        plot.subtitle = element_textbox_simple(size = 10, 
+                                               color = pal[1],
+                                               margin = margin(0,120,5,1, "mm")),
+        plot.caption = element_text(face = "italic",
+                                    color = "black",
+                                    hjust = 0,
+                                    margin(0,0,4,1, "mm"))) 
+```
+
+```{r session}
+sessionInfo()
+```
+
