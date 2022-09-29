@@ -57,7 +57,7 @@ data_raw %>%
   arrange(desc(n))
 ```
 
-To conclude: 173 of 2270 individuals are hybrids of two species (`hybrid` = Sp). For their distinct 27 female and 26 male parent-species we can observe 28 pairwise combinations. However, the species of the male parent is often unknown. Most of the parents are hybrids themselves (EUL).
+To conclude: 173 of 2270 individuals are hybrids of two species (`hybrid` = Sp). For their distinct 28 female and 27 male parent-species we can observe 28 pairwise combinations. However, the species of the male parent is often unknown. Most of the parents are hybrids themselves (EUL).
 
 # Make it a network object
 
@@ -117,17 +117,17 @@ net_final %>%
 
 # Plot
 
-```{r plot, fig.width=9.8, fig.height=10.5, fig.cap="Network of hybrid lemurs' parental species", fig.alt=fig.alt, warning=FALSE}
+```{r plot, fig.width=10, fig.height=10, fig.cap="Network of hybrid lemurs' parental species", fig.alt=fig.alt, warning=FALSE}
 
-fig.alt <- "The Duke Lemur Center has hosted more than 2000 Lemurs across 27 species since 1968. Around eight percent of the animals are hybrids of different species. The graph shows the taxonomic relations between their parents, who are often hybrids themselves, as a circular network consisting of 13 nodes. Most connections run between hybrid species. However, in many cases the father's species could not be identified, 'pater semper incertus est'."
+fig.alt <- "The Duke Lemur Center has hosted more than 2000 Lemurs across 28 species since 1968. Around eight percent of the animals are hybrids of different species. The graph shows the taxonomic relations between their parents, who are often hybrids themselves, as a circular network consisting of 13 nodes. Most connections run between hybrid species. However, in many cases the father's species could not be identified, 'pater semper incertus est'."
 
 # pick some nice colors
 pal <- c("#FDF8E5", "#EBA843", "#ff6b13", "#7D5F45", "#42474B", "#B2C438", "#0B5587")
 
-################ SET SEED TO FIX LAYOUT OF THE GRAPH ###################
-set.seed(999)                                                          #
-layout <- create_layout(net_final, layout = "igraph", algorithm = "fr")#
-########################################################################
+### SET SEED TO FIX LAYOUT OF THE GRAPH (position of nodes is picked at random)###
+set.seed(999)                                                                    # 
+layout <- create_layout(net_final, layout = "igraph", algorithm = "fr")          #
+##################################################################################
 
 # make plot
 ggraph(layout) +
@@ -151,14 +151,14 @@ ggraph(layout) +
                                           barwidth = 7,
                                           barheight = .5)) +
   labs(title = "Lemur Hybrids", 
-       subtitle = "The Duke Lemur Center has hosted more than 2000 Lemurs across 27 species since 1968. Around eight percent of the animals are hybrids of different species. The graph shows the taxonomic relations between their parents, who are often hybrids themselves. However, in many cases the father's species could not be identified, 'pater semper incertus est'.",
+       subtitle = "The Duke Lemur Center has hosted more than 2000 Lemurs across 28 species since 1968. Around eight percent of the animals are hybrids of different species. The graph shows the taxonomic relations between their parents, who are often hybrids themselves. However, in many cases the father's species could not be identified, 'pater semper incertus est'.",
        caption = "Data source: The Duke Lemur Center, provided by Jesse Mostipak\nPlot: @christinehvw") +
-  expand_limits(x = c(-1.1, 1.1)) +
+  expand_limits(x = c(0,4.5)) +
   theme_graph() +
   theme(plot.background = element_rect(fill = pal[5]),
-        text = element_text(size = 11, 
+        text = element_text(size = 10, 
                             color = pal[1]),
-        plot.margin = unit(c(0,5,2,2), "mm"),
+        plot.margin = unit(c(0,0,2,2), "mm"),
         legend.position = c(0.075, 0.96), 
         legend.direction = "horizontal",
         legend.title.align = 0.5,
@@ -173,6 +173,8 @@ ggraph(layout) +
                                     hjust = 0,
                                     margin(0,0,4,1, "mm"))) 
 ```
+
+# Session Info
 
 ```{r session}
 sessionInfo()
