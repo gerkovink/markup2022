@@ -1,0 +1,124 @@
+---
+title: 'Replication of Exercise 2: Latent Class Analysis'
+author: "Daniel Anadria"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Introduction
+
+In this exercise, I perform latent class analysis (LCA) using the `tidySEM` package. LCA is a type of structural equation modelling analysis that can be used to discover latent subpopulations within a population sample. LCA can be seen as a data reduction technique focused on clustering similar observations together.
+
+For this exercise, I use the `data_mix_ordinal` dataset built-in to `tidySEM`. The research question is: **How many latent classes is the sample composed of?**
+
+# Preparing the Data
+
+```{r}
+library(tidySEM)
+data <- data_mix_ordinal
+data[1:4] <- lapply(data, ordered) # indicators as ordered factors
+```
+
+# Exploring the Data
+
+An important step to preceding any statistical analysis is data exploration.
+
+```{r}
+tidySEM::descriptives(data) # descriptives
+```
+
+I see that all my indicators are ordered factors, each has four levels, 5000 observations, no missing data. 
+
+# Conducting Latent Class Analysis
+
+LCA entails fitting successive models, each with one additional class compare to the previous one. In my example, I will fit 1 to 4 class solutions and compare their output in order to choose the best one.
+Depending on your computer's computational power, this might take a while.
+
+Before I fit a series of LCA models, I set a random seed using `set.seed()`. This is an important step as there is some inherent randomness in the LCA computations, and having the same seed number ensures that two separate researcher obtain exactly the same results when fitting LCA models.
+
+```{r, warning=F, message=F}
+set.seed(321) # setting seed 
+res <- mx_lca(data = data, classes = 1:4) # fitting LCA 
+```
+
+# Class enumeration
+
+Class enumeration is about comparing a sequence of LCA models fitted to the data. To do so, I use `tidySEM::table_fit()` with the results object as the input. However, the resulting model fit table contains a lot of information on each of the four models.
+Hence I focus on a subset of model fit indices and classification diagnostics.
+
+```{r}
+fit_table <- table_fit(res) # model fit table
+fit_table[ , c("Name", "LL", "AIC", "BIC", "Entropy", "prob_min", "prob_max", "n_min", "n_max")] # a selection from the model fit table
+```
+The model fit table is important for selecting the final class solution.
+My subset of fit indices and classification diagnostics includes:
+
+- **Name** indicates the $K$-class solution.
+In this case, I chose to fit 1 - 4 class solutions.
+- **LL** is the -2*log-likelihood of each model.
+- **AIC** and **BIC** are the Akaike 
+and the Bayesian Information Criterion, respectively.
+- **prob_min** and **prob_max** are 
+the lowest and the highest posterior class probability
+by most likely class membership.
+- **n_min** and **n_max** are the lowest and the highest
+class proportion based on the posterior class probabilities.
+
+There are several possible strategies to select the final class solution.
+Here, I apply the following strategy: 
+
+First, I examine the `-2*log likelihood` which falls successively with each added class.
+
+Then, I look at the `BIC` value which is fairly close for the one, two, and three-class solutions, but high for the four-class solution.
+
+Classification diagnostics should not be used for model selection, but they can be used to disqualify certain solutions because they are uninterpretable. I see that `prob_min` for the four-class solution is low, therefore I disqualify this solution.
+
+Out of the remaining three solutions, I notice that `entropy` is the highest for the three-class solution,
+and it has a satisfactory `prob_min` and `n_min`. Based on this, I can retain the three class solution in model selection.
+Entropy for the one-class solution will always equal to one, as it is 100% true that every case is in that class.
+Based on the low entropy of the two-class solution, I eliminate this model.
+
+Finally, when comparing the one and three-class solutions, I consult the `BIC` which tells me that the added complexity
+of having three classes still explains the data better than a one-class solution.
+Therefore, I select the three-class solution as my final-class solution.
+
+# Interpreting Final Class Solution
+
+To aid my understanding of the final class solution, I use plot it. 
+The resulting graph shows response patterns on all the indicators for each group.
+
+```{r}
+library(ggplot2)
+plot_prob(res[[3]]) # plotting the response patterns for the final class solution
+```
+The plot shows the distributions of the response probabilities on the indicators
+for each of the three classes.
+For instance, I see that in Class 1 the most common response to u2 is 2,
+while in Class 2 and Class 3 this is 0.
+I can also see that response 1 is a rare response not forming the majority in 
+any class.
+Class 2 distinguishes itself because the majority scores the response 0 category of u3 and u4,
+while in Class 1 and 2 this is not the case.
+Class 3 distinguishes itself because the most common response to u3 and u4 is 3.
+
+
+# Extracting posterior class probabilities
+
+Another step is to extract posterior class probabilities.
+
+```{r}
+probs <- class_prob(res[[3]]) # extracting the posterior class probabilities of the final class solution
+probs$mostlikely.class # posterior class probabilities by most likely class membership
+```
+
+# Conclusion
+
+I conclude that the three class solution is the best fit the present data.
+
+End.
+
+```{r}
+sessionInfo()
+```
+
