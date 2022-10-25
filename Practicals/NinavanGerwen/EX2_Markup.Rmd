@@ -1,0 +1,94 @@
+---
+title: 'Exercise 2: Workflow in RMarkdown'
+author: "Nina van Gerwen (1860852)"
+date: "2022-10-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## A Reproducible Exercise in RMarkdown
+
+For my exercise, I have chosen to simulate dichotomous IRT data. This
+can be done with the following code.
+
+```{r}
+## First, set a seed for reproducibility
+set.seed(3)
+
+## Decide on the sample size and test length
+n <- 100
+k <- 5
+
+## Sample person parameters from a standard normal distirbution
+theta <- rnorm(n)
+
+## Create a matrix that repeats theta k times so we can use
+## the hadamard product later
+theta_k <- matrix(data = rep(theta, k), ncol = k)
+
+## Choose item parameters for every item and put this in a matrix
+    ## item difficulty
+beta <- matrix(data = rep(c(-2, -1, 0, 1, 2), k), ncol = k, nrow = n,
+               byrow = TRUE)
+    ## item discrimination
+alpha <- matrix(data = 0.7, ncol = k, nrow = n)
+
+## Calculate the probability to score a 1 for every person on every item
+## following the 2PL model in IRT
+Z <- exp((alpha * theta_k) + beta) / (1 + exp((alpha *theta_k) + beta))
+
+## Create a matrix of dichotomous data that can be seen as answers of
+## 100 sampled participants to a dichotomous test with 5 items
+data <- matrix(data = rbinom(n = n * k, size = 1, prob = Z), ncol = k,
+               nrow = n)
+
+## Check the summary of the data
+summary(data)
+```
+
+From the summary statistics, we find that item 1 is the most difficult as the 
+least people had it correct (13%), whereas item 5 was the easiest with 
+86% of the sample scoring a 1.
+
+To replicate these results, we can simply run only the following code. However,
+this assumes that the item parameters are identical to the first time (which
+should be the case in a replication).
+
+```{r Replicating results}
+## Sample new person parameters from a standard normal distribution
+rep_theta <- rnorm(n)
+
+## Create a matrix that repeats theta k times so we can use
+## the hadamard product later
+rep_theta_k <- matrix(data = rep(theta, k), ncol = k)
+
+## Calculate the probability to score a 1 for every person on every item
+## following the 2PL model in IRT
+Z <- exp((alpha * rep_theta_k) + beta) / (1 + exp((alpha * rep_theta_k) + beta))
+
+## Create a matrix of dichotomous data that can be seen as answers of
+## 100 sampled participants to a dichotomous test with 5 items
+rep_data <- matrix(data = rbinom(n = n * k, size = 1, prob = Z), ncol = k,
+               nrow = n)
+
+## Check the summary of the data
+summary(rep_data)
+```
+
+This time we find that 15% scored a 1 on the most difficult item (V1) and 90%
+scored a 1 on the easiest item (V5). This shows that there is variance between
+different studies, which is to be expected as we are working with probabilities.
+
+### Session Information
+
+In order to allow people to know under which settings the above exercise was done,
+we have included the session information.
+
+```{r}
+sessionInfo()
+```
+
+
