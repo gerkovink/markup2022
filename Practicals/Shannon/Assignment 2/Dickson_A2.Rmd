@@ -1,0 +1,170 @@
+---
+title: "Markup Assignment 2"
+author: "Shannon Dickson"
+date: "`r format(Sys.Date(), '%B %d %Y')`"
+output: 
+   bookdown::html_document2:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: false
+    theme: paper
+---
+
+<style type="text/css">
+  
+body{ /* Normal  */
+  font-size: 12px;
+  }
+td {  /* Table  */
+  font-size: 12px;
+}
+h1.title {
+  font-size: 18px;
+  color: DarkBlue;
+}
+h1 { /* Header 1 */
+  font-size: 18px;
+}
+h2 { /* Header 2 */
+  font-size: 18px;
+}
+h3 { /* Header 3 */
+  font-size: 18px;
+}
+code.r{ /* Code block */
+  font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+  font-size: 14px;
+}
+</style>
+
+---
+
+```{r setup, echo = FALSE}
+library(knitr)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+# Comparing Bootstrap Standard Errors to Regular OLS Standard Errors
+
+## Preparation
+
+Before doing anything, we must set a seed to make the results reproducible. 
+
+```{r}
+set.seed(4231)
+```
+
+Now we can load all of the necessary packages. 
+
+```{r}
+library(dplyr)    
+library(magrittr) 
+library(purrr)
+library(modelr)
+library(ggplot2)
+library(kableExtra)
+```
+
+We will work with the build-in R data set, `iris`. The first few rows of this data set are shown below. 
+
+**Table 1: Overview of the iris dataset**
+
+```{r}
+head(iris) %>% 
+  kable("html") %>% 
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
+```
+
+
+## OLS Regression
+
+Using `lm` we can fit an OLS regression model to the `iris` data set, predicting `Sepal.Length`. 
+
+```{r}
+m1 <- lm(Sepal.Length ~ Petal.Length + Petal.Width + Sepal.Width, data = iris)
+summary(m1)
+```
+
+## Bootstrap Regression
+
+The `bootstrap` function from `modelr` is a simple way of performing a bootstrap using `tidy` principles. I chose to resample the `iris` data 10,000 since the original data set is quite small. `bootstrap()` creates a tibble of 10,000 resampled data sets (with replacement).
+
+```{r}
+boot_iris <- iris %>% 
+  bootstrap(10000)
+```
+
+Next I run the regression model over all of the 10,000 data sets and use `broom()` function to nicely format the models in a tibble.
+
+```{r}
+boot_iris %>% 
+    mutate(lm = map(strap, ~lm(Sepal.Length ~ Petal.Length + Petal.Width + Sepal.Width, data = .)),
+           tidy = map(lm, broom::tidy)) -> boot_iris
+```
+Now I can summarise the results from the 10,000 regressions. The code below pulls all of the `lm` objects and tidied the output by binding them as rows. 
+
+```{r}
+boot_iris %>%
+  pull(tidy) %>%
+  map2_df(., seq(1, 10000), ~mutate(.x, resample = .y)) -> tidy_boot_iris
+
+head(tidy_boot_iris)
+```
+
+```{r}
+tidy_boot_iris %>%
+  # the term is the different species of flower
+  group_by(term) %>%
+  # summarise the bootstrapped standard error (standard deviation of the coefficients of the model parameters)
+  summarise(boot_se = sd(estimate)) -> boot_se_m1
+
+boot_se_m1
+```
+
+## Comparison of OLS and Bootstrapped Standard Errors
+
+**Table 2: OLS and bootstrapped standard errors for each of the model parameters**
+
+```{r}
+broom::tidy(m1) %>% select(std.error) %>% 
+  cbind(boot_se_m1) %>% 
+  select(-term) %>% 
+  kable("html", col.names = c("OLS Standard Errors", "Bootstrapped Standard Errors")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
+```
+
+**Figure 1. Visualisation of the OLS and bootstrapped standard errors for each of the model parameters**
+
+```{r}
+broom::tidy(m1) %>%
+  mutate(category = "OLS Standard Errors") %>%
+  bind_rows(., broom::tidy(m1) %>% select(-std.error) %>% left_join(., boot_se_m1 %>% rename(std.error = boot_se))) %>%
+  mutate(category = ifelse(is.na(category), "Bootstrapped Standard Errors", category),
+         tstat = estimate/std.error,
+         pval = 1.975*pt(-abs(tstat),df=45), 
+         lwr = estimate - 1.975*std.error,
+         upr = estimate + 1.975*std.error) %>%
+  filter(term != "(Intercept)") %>% 
+  mutate(term = forcats::fct_recode(term,
+                                    "Petal Length" = "Petal.Length",
+                                    "Petal Width" = "Petal.Width",
+                                    "Sepal Width" = "Sepal.Width")) %>%
+  ggplot(.,aes(category, estimate, ymin = lwr, ymax = upr)) + 
+  geom_pointrange(position = position_dodge(width = 1), colour = "darkseagreen4") +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "darkorange") +
+  labs(x = " ", y = " ",
+       title = "Comparing Standard Errors from a regular OLS Regression with Bootsrapepd Standard Errors") +
+  theme_bw() +
+  facet_wrap(~term, scales = "free_x") +
+  coord_flip() 
+```
+
+# Session information
+
+```{r}
+sessionInfo()
+```
+
