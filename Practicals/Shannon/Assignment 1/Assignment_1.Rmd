@@ -1,0 +1,147 @@
+---
+title: "Markup: Assignment 1"
+author: "Shannon Dickson"
+date: "`r format(Sys.Date(), '%B %d %Y')`"
+output: 
+   bookdown::html_document2:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: false
+    theme: paper
+    
+---
+<style type="text/css">
+  
+body{ /* Normal  */
+  font-size: 12px;
+  }
+td {  /* Table  */
+  font-size: 12px;
+}
+h1.title {
+  font-size: 18px;
+  color: DarkBlue;
+}
+h1 { /* Header 1 */
+  font-size: 18px;
+}
+h2 { /* Header 2 */
+  font-size: 18px;
+}
+h3 { /* Header 3 */
+  font-size: 18px;
+}
+code.r{ /* Code block */
+  font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+  font-size: 14px;
+}
+</style>
+
+---
+
+```{r setup, echo = FALSE}
+library(knitr)
+knitr::opts_chunk$set(include = TRUE, 
+                      echo = TRUE, 
+                      message = FALSE, 
+                      warning = FALSE)
+```
+
+# Preparation
+
+The following packages are required.
+
+```{r}
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(kableExtra)
+```
+
+# Simulation
+
+Below I perform a small simulation that samples 100 times from a normal distribution. Sample statistics are collected for each sample; mean, standard error, bias, and the lower and upper confidence intervals. 
+
+```{r}
+set.seed(6368683)
+nsim <- 100
+samples <- data.frame(matrix(nrow = nsim, ncol = 7))
+colnames(samples) <- c("iter", "Mean", "Std.Error", "Bias", "LowerCI", "UpperCI", "Coverage")
+
+for (i in 1:nsim){
+  x <- rnorm(5000, mean = 0, sd = 1)
+  m <- mean(x)
+  df <- length(x) - 1
+  se <- 1 / sqrt(length(x))
+  ci <- qt(.975, df) * se
+  
+  samples[i, 1] <- i
+  samples[i, 2] <- m
+  samples[i, 3] <- se
+  samples[i, 4] <- m - 0
+  samples[i, 5] <- m - ci
+  samples[i, 6] <- m + ci
+  samples[i, 7] <- (m - ci < 0 & 0 < m + ci)
+} %>% 
+  as_tibble()
+
+samples$Coverage <- as.integer(samples$Coverage)
+```
+
+In our sample the population value covered 95% of the time. 
+
+```{r}
+samples %>%
+  colMeans %>% 
+  kable(digits = 4, format = "html", caption = "Table 1. Summary of the samples") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = F)
+```
+
+To identify samples for which the population value is not covered, we need to filter our data by `coverage`. 
+
+```{r}
+samples %>% 
+  filter(Coverage == 0) %>% 
+  kable(digits = 4, format = "html", caption = " Table 2. Samples outside the population value") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = F)
+```
+
+## Visualising the samples
+
+Below 100 samples and their 95% confidence intervals are plotted. The samples not covered are in coral. 
+
+```{r}
+samples %>% 
+  mutate(coverage = as.factor(Coverage)) %>% 
+  ggplot(aes(y=Mean,
+             x=1:100,
+             colour = coverage)) + 
+  geom_point() +
+  geom_errorbar(aes(ymax = UpperCI, ymin = LowerCI)) +
+  geom_hline(aes(yintercept = 0),
+             color = "cornsilk3", size = 1) + 
+  xlab("N Sim = 100") +
+  ylab("Means and 95% CI") +
+  scale_colour_manual(values = c("0" = "lightcoral",
+                                 "1" = "darkseagreen")) +
+  theme_bw()
+```
+
+## Results table
+
+Below the samples are presented in a table. You can scroll to view the 100 samples. 
+
+```{r}
+samples %>% 
+kable(digits = 4, format = "html", caption = "Table 3. Simulated samples (N = 100) and sample statistics") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = T) %>% 
+  scroll_box(width = "100%", height = "200px")
+```
+
+
