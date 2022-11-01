@@ -6,6 +6,14 @@ output: html_document
 ---
 
 # Monte Carlo simulation exercise
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+```{r}
+set.seed(563)
+```
+
 
 ## Sample 100 samples
 
@@ -19,6 +27,8 @@ for (i in 1:100){
     samps[i,j] <- samp_i[j]
   }
 }
+
+
 ```
 
 ## Calculations
@@ -47,8 +57,41 @@ for (i in 1:100){
 }
 ```
 
+
+```{r}
+summstats <- as.data.frame(summstats)
+colnames(summstats) <- c("Bias", "SE", 
+                         "Lowerbound_CI", "Upperbound_CI")
+summstats <- summstats  %>% 
+  mutate(id = row_number(), .before = 1)
+
+samps <- as.data.frame(samps)
+samps <- samps  %>% 
+  mutate(id = row_number(), .before = V1)
+
+```
+
 ## Plot
+"A replication of the procedure that generates a 95% confidence interval that is centered around the sample mean would cover the population value at least 95 out of 100 times" (Neyman, 1934)
 
+```{r}
+ggplot(summstats, 
+       aes(x = 1:nrow(summstats),
+           y = Bias)) +
+  labs(x="Mean", y = "Index") +
+  ylim (-0.3, 0.3) +
+  geom_errorbar(aes(ymin=Lowerbound_CI, ymax=Upperbound_CI)) +
+  geom_point() + 
+  geom_hline(yintercept=0, linetype="dashed", color = "red")
 
+```
+## CIs not containing population mean
+
+```{r}
+outside_samps <- summstats %>% 
+  filter(Lowerbound_CI > 0 | Upperbound_CI < 0) %>% 
+  select(-id)
+
+```
 
 
