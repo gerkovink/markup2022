@@ -88,10 +88,17 @@ ggplot(summstats,
 ## CIs not containing population mean
 
 ```{r}
-outside_samps <- summstats %>% 
-  filter(Lowerbound_CI > 0 | Upperbound_CI < 0) %>% 
-  select(-id)
+outside_samp_stats <- summstats %>% 
+  rename(Mean = Bias) %>% 
+  filter(Lowerbound_CI > 0 | Upperbound_CI < 0)
 
+print(outside_samp_stats[,2:5])
+```
+
+```{r}
+# save samples
+outside_samps <- samps %>% 
+  filter(id %in% outside_samp_stats$id)
 ```
 
 
