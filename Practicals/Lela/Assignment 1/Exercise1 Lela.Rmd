@@ -1,0 +1,54 @@
+---
+title: "Markdown Exercise 1"
+author: "Lela Roos (1729683)"
+date: "9/16/2022"
+output: html_document
+---
+
+# Monte Carlo simulation exercise
+
+## Sample 100 samples
+
+```{r}
+n <- 600 # set sample size
+samps <- matrix(nrow = 100, ncol = n)
+
+for (i in 1:100){
+  samp_i <- rnorm(n)
+  for (j in 1:n){
+    samps[i,j] <- samp_i[j]
+  }
+}
+```
+
+## Calculations
+For each of these samples, calculate the following statistics for the mean:
+standard error
+lower bound of the 95% confidence interval
+upper bound of the 95% confidence interval
+
+```{r}
+stats <- function(samp){
+  bias <- mean(samp)
+  se <- sd(samp)/sqrt(length(samp))
+  CI_l <- mean(samp) - 1.96 * se
+  CI_u <- mean(samp) + 1.96 * se
+  results <- cbind(bias, se, CI_l, CI_u)
+  return(results)
+}
+  
+summstats <- matrix(nrow = 100, ncol = 4)
+
+for (i in 1:100){
+  summs <- stats(samps[i,])
+  for (j in 1:4){
+    summstats[i,j] <- summs[j]
+  }
+}
+```
+
+## Plot
+
+
+
+
