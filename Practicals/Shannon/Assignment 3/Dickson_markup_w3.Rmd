@@ -1,0 +1,84 @@
+---
+title: "Example document to recreate with beamer in \\LaTeX"
+author: "Shannon Dickson"
+date:  |
+    | Fall 2019
+    | Markup Languages and Reproducible Programming in Statistics
+fontsize: 10pt
+output: 
+  beamer_presentation:
+    theme: "default"
+    colortheme: "seahorse"
+    keep_tex: TRUE
+header-includes:
+  - \title{Welcome to \LaTeX{} Workshop}
+---
+
+## Outline
+
+Working with equations\
+\
+\ \ \ \ Aligning the same equations\
+\ \ \ \ Omit equation numbering\
+\ \ \ \ Ugly alignment\
+\
+\
+\
+Discussion
+
+## Working with equations
+
+We define a set of equations as
+
+\begin{gather}
+a = b + c^2,\\
+a - c^2 = b,\\
+\textrm{left side} = \textrm{right side},\\
+\textrm{left side} + \textrm{something} \geq \textrm{right side}, 
+\end{gather} 
+
+for all something > 0.
+
+## Aligning the same equations
+
+Aligning the equations by the equal sign gives a much better view into the placements
+of the separate equation components
+
+\begin{align} 
+a &= b + c^2,\\
+a - c^2 &= b,\\
+\textrm{left side} &= \textrm{right side},\\
+\textrm{left side} + \textrm{something} &\geq \textrm{right side},
+\end{align}
+
+## Omit equation numbering
+
+\begin{align*} 
+a &= b + c^2\\
+a - c^2 &= b\\
+\textrm{left side} &= \textrm{right side}\\
+\textrm{left side} + \textrm{something} &\geq \textrm{right side}
+\end{align*}
+
+## Ugly alignment
+
+Some components do not look well, when aligned. Especially equations with different
+heights and spacing. For example,
+
+\begin{align} 
+E = mc^2, \\
+m =  \frac{E}{c^2}, \\
+c =  \sqrt{\frac{E}{m}}, \\
+\end{align}
+
+Take that into account. 
+
+## Discussion
+
+This is where you’d normally give your audience a recap of your talk, where you could
+discuss e.g. the following
+
+- Your main findings
+- The consequences of your main findings
+- Things to do
+- Any other business not currently investigated, but related to your talk
