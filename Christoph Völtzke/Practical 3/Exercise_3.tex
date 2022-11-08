@@ -1,0 +1,187 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Beamer Presentation
+% LaTeX Template
+% Version 1.0 (10/11/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+
+\documentclass{beamer}
+
+\mode<presentation> {
+
+% The Beamer class comes with a number of default slide themes
+% which change the colors and layouts of slides. Below this is a list
+% of all the themes, uncomment each in turn to see what they look like.
+
+\usetheme{default}
+%\usetheme{AnnArbor}
+%\usetheme{Antibes}
+%\usetheme{Bergen}
+%\usetheme{Berkeley}
+%\usetheme{Berlin}
+%\usetheme{Boadilla}
+%\usetheme{CambridgeUS}
+%\usetheme{Copenhagen}
+%\usetheme{Darmstadt}
+%\usetheme{Dresden}
+%\usetheme{Frankfurt}
+%\usetheme{Goettingen}
+%\usetheme{Hannover}
+%\usetheme{Ilmenau}
+%\usetheme{JuanLesPins}
+%\usetheme{Luebeck}
+%\usetheme{Madrid}
+%\usetheme{Malmoe}
+%\usetheme{Marburg}
+%\usetheme{Montpellier}
+%\usetheme{PaloAlto}
+%\usetheme{Pittsburgh}
+%\usetheme{Rochester}
+%\usetheme{Singapore}
+%\usetheme{Szeged}
+%\usetheme{Warsaw}
+
+% As well as themes, the Beamer class has a number of color themes
+% for any slide theme. Uncomment each of these in turn to see how it
+% changes the colors of your current slide theme.
+
+%\usecolortheme{albatross}
+\usecolortheme{beaver}
+%\usecolortheme{beetle}
+%\usecolortheme{crane}
+%\usecolortheme{dolphin}
+%\usecolortheme{dove}
+%\usecolortheme{fly}
+%\usecolortheme{lily}
+%\usecolortheme{orchid}
+%\usecolortheme{rose}
+%\usecolortheme{seagull}
+%\usecolortheme{seahorse}
+%\usecolortheme{whale}
+%\usecolortheme{wolverine}
+
+%\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+%\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
+
+%\setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title{Example document to recreate with beamer in LATEX} % The short title appears at the bottom of every slide, the full title is only on the title page
+
+\author{Florian van Leeuwen} % Your name
+
+\date{\today} % Date, can be changed to a custom date
+\institute[UU] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+{
+Markup Languages and Reproducible Programming in Statistics \\ % Your institution for the title page
+
+}
+\begin{document}
+
+\begin{frame}
+\titlepage % Print the title page as the first slide
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline} % Table of contents slide, comment this block out to remove it
+\tableofcontents
+\end{frame}
+
+\section{Working with equations}
+\begin{frame}
+\frametitle{Working with equations}
+We define a set of equations as
+\begin{equation}
+\label{eq1}
+a = b + c^2,
+\end{equation}
+
+\begin{equation}
+\label{eq2}
+a - c^2 = b,
+\end{equation}
+
+\begin{equation}
+\label{eq3}
+left side = right side,
+\end{equation}
+
+\begin{equation}
+\label{eq4}
+left side + something \geq right side,
+\end{equation}
+
+for all something $>$ 0.
+
+\end{frame}
+
+\section{Aligning the same equations}
+\begin{frame}
+\frametitle{Aligning the same equations}
+Aligning the equations by the equal sign gives a much better view into the placements of the separate equation components.
+\begin{align}
+a &= b + c^2, \\
+a - c^2 &= b, \\
+left side &= right side, \\
+left side + something &\geq right side,
+\end{align}
+
+
+\end{frame}
+
+\section{Omit equation numbering}
+\begin{frame}
+\frametitle{Omit equation numbering}
+Alternatively, the equation numbering can be omitted.
+
+\begin{align*}
+a &= b + c^2, \\
+a - c^2 &= b, \\
+left side &= right side, \\
+left side + something &\geq right side,
+\end{align*}
+\end{frame}
+
+\section{Ugly alignment}
+\begin{frame}
+\frametitle{Ugly alignment}
+Some components do not look well, when aligned. Especially equations with different heights and spacing. For example,
+\begin{align}
+E &= mc^2, \\
+m &= \frac{E}{c^2}, \\
+c &= \sqrt{\frac{E}{m}}.
+\end{align}
+Take that into account.
+
+\end{frame}
+
+\section{Discussion}
+\begin{frame}
+\frametitle{Discussion}
+This is where you’d normally give your audience a recap of your talk, where you could discuss e.g. the following
+\begin{itemize}
+  \item Your main findings
+  \item The consequences of your main findings
+  \item Things to do
+  \item Any other business not currently investigated, but related to your talk
+\end{itemize}
+\end{frame}
+
+\end{document} 

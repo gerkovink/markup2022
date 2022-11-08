@@ -1,0 +1,147 @@
+---
+title: "Exercise 2"
+author: "Christoph Völtzke"
+date: "2022-10-17"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+This is the file for the second exercise focusing on the following question:
+
+*Design a study that:*\
+    - Does something that requires RNG \
+    - fixes the RNG seed \
+    - Replicates the results \
+    - Generates an reproducible archive/reprex/markdown\
+    - Will run on my machine without trouble (package installs may be excused)\
+    - Communicates the info of your session
+    
+# Aim
+
+This small study aims to fit classification trees on the widely known titanic data set. As I will use ensemble methods including cross-validation a RNG is needed to assure reproducable results
+
+# Reproducible code
+
+## Fixing the random seed
+```{r}
+set.seed(123)
+```
+
+## Required packages
+```{r message=FALSE, warning=FALSE}
+library(tidyverse) # Data manipulation
+library(magrittr) # Pipes
+library(caret)
+library(gbm)
+library(xgboost)
+library(readr) # loading the data
+```
+
+## Data set
+```{r}
+titanic <- read_csv("titanic.csv")
+```
+
+### Data manipulation
+```{r}
+titanic <-  titanic %>% 
+  select(Survived,Pclass, Age, Sex) %>% 
+  mutate(Survived = as.factor(Survived),
+         Age = as.numeric(Age), 
+         Sex = as.numeric(factor(Sex)), 
+         Pclass = as.numeric(factor(Pclass)))
+```
+
+### Separating Training and Test Set
+```{r}
+N <- nrow(titanic)
+idx_train <- sample(1:N, size = round(N * 0.7))
+train_df <- titanic[idx_train, ] # Training data
+val_df <- titanic[-idx_train, ] # Test data
+```
+
+## Validation settings
+```{r}
+cvcontrol <- trainControl(method = "repeatedcv", 
+                          number = 10,
+                          allowParallel = TRUE)
+```
+
+## Fitting a bagged model
+```{r}
+bag_train_t <- train(Survived ~ .,
+                   data = train_df, 
+                   method = 'treebag',
+                   trControl = cvcontrol,
+                   importance = TRUE)
+```
+
+## Fitting a random forest model
+```{r}
+rf_train_t <- train(Survived ~ .,
+                   data = train_df, 
+                  method = 'rf',
+                  trControl = cvcontrol,
+                  importance = TRUE)
+```
+
+### Assessing importance of predictors
+```{r}
+rf_train_t %>%
+  varImp %>%
+  plot
+```
+
+## Fitting a gbm model 
+```{r}
+gbm_train_t <- train(Survived ~ .,
+                   data = train_df,
+                   method = "gbm",
+                   verbose = F,
+                   trControl = cvcontrol)
+```
+
+## Fitting a Boosting model with the XGBoost package
+```{r}
+train_x <- model.matrix(Survived ~ .,
+                   data = train_df)[,-1]
+train_y <- as.numeric(train_df$Survived) - 1
+xgboost_train_t <- xgboost(data = train_x,
+                         label = train_y, 
+                         max.depth = 6,
+                         eta = 0.3,
+                         nthread = 4,
+                         nrounds = 4,
+                         objective = "binary:logistic",
+                         verbose = 2)
+
+```
+
+## Assess the predictive performance of the different models
+```{r}
+bag_test <- predict(bag_train_t, newdata = val_df)
+rf_test  <- predict(rf_train_t, newdata = val_df)
+gbm_test <- predict(gbm_train_t, newdata = val_df)
+xgb_test <- predict(xgboost_train_t, newdata =  model.matrix(Survived ~ .,
+                   data = val_df)[,-1]) %>%
+  factor(x = ifelse(. < 0.5, 1, 2), levels = c(1,2), labels = c("Survived", "Died"))
+
+table(bag_test, val_df$Survived)
+table(rf_test, val_df$Survived)
+table(gbm_test, val_df$Survived)
+table(xgb_test, val_df$Survived)
+```
+# Replication
+```{r}
+sessionInfo()
+```
+
