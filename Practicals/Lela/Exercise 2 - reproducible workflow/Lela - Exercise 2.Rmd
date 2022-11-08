@@ -1,0 +1,139 @@
+---
+title: "Exercise 2"
+author: "Lela Roos (1729683)"
+date: "11/1/2022"
+output: html_document
+---
+
+Design a study that:
+
+Does something that requires RNG
+Fixes the RNG seed
+Replicates the results
+Generates an reproducible archive/reprex/markdown
+Will run on my machine without trouble (package installs may be excused)
+Communicates the info of your session
+
+## Libraries
+```{r}
+library(dplyr)
+library(ISLR) # for the data
+```
+
+
+# Intro
+We fit two linear regression models to the College data (from the ISLR package).In the first model we try to predict the graduation rate based on the number of applications, the number of fulltime undergraduates, and the student/faculty ratio. In the second model we predict graduation rate based on the number of enrolled students, the percentage of students from top 10% of high school classes, and the percentage of faculty wih PhDs. We compare the models based on their MSE.
+
+## Load data
+```{r}
+data <- College %>% 
+  na.omit()
+```
+
+# RNG + seed
+We use the RNG to randomly split our data into a training and a test set, so we start by setting a seed.
+
+```{r}
+set.seed(341)
+```
+
+## Select indexes for train set
+```{r}
+n <- nrow(data)
+train_ind <- sample(x =1:n, size = round(n/2))
+```
+
+## Allocation to train/test set
+```{r}
+train <- data[train_ind,]
+test <- data[-train_ind,]
+```
+
+# Train first model & make predictions
+## Fit model to train set
+```{r}
+fit <-lm(Grad.Rate ~ Apps + F.Undergrad + S.F.Ratio,
+         data = train)
+```
+
+## Make prediction on the test set
+```{r}
+test$pred.grad.rate <- predict(fit, newdata = test)
+```
+
+## Calculate MSE
+```{r}
+MSE1 <- mean((test$Grad - test$pred.grad.rate)^2)
+```
+# Train second model & make predictions
+
+## Fit model to train set
+```{r}
+fit2 <-lm(Grad.Rate ~ Enroll + Top10perc + PhD,
+         data = train)
+```
+
+## Make prediction on the test set
+```{r}
+test$pred.grad.rate2 <- predict(fit2, newdata = test)
+```
+
+## Calculate MSE
+```{r}
+MSE2 <- mean((test$Grad - test$pred.grad.rate2)^2)
+```
+
+# Compare models
+```{r}
+c(MSE1, MSE2)
+```
+So we conclude model 2 is a better model.
+
+# Replication
+
+```{r}
+set.seed(5455)
+
+# Select indexes for train set
+n <- nrow(data)
+train_ind <- sample(x =1:n, size = round(n/2))
+
+# Allocation to train/test set
+train <- data[train_ind,]
+test <- data[-train_ind,]
+
+
+## Train the first model & make predictions
+# Fit model to train set
+fit <-lm(Grad.Rate ~ Apps + F.Undergrad + S.F.Ratio,
+         data = train)
+
+# Make prediction on the test set
+test$pred.grad.rate <- predict(fit, newdata = test)
+
+# Calculate MSE
+MSE1 <- mean((test$Grad - test$pred.grad.rate)^2)
+
+## Train second model & make predictions
+
+# Fit model to train set
+fit2 <-lm(Grad.Rate ~ Enroll + Top10perc + PhD,
+         data = train)
+
+# Make prediction on the test set
+test$pred.grad.rate2 <- predict(fit2, newdata = test)
+
+
+# Calculate MSE
+MSE2 <- mean((test$Grad - test$pred.grad.rate2)^2)
+
+# Compare models
+c(MSE1, MSE2)
+```
+Again, we conclude model 2 is our preferred model.
+
+# Session info
+```{r}
+sessionInfo()
+```
+
