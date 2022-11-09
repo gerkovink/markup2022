@@ -1,0 +1,72 @@
+---
+title: "Exercise 2"
+author: "Hsuan Lee"
+output: html_document
+---
+
+## Introduction
+
+The study is concerned with whether the number of rat sighting is tied to the population of a city and the waste of food thrown on the streets. 
+
+
+The data analyzed are simulated with 4 variables, they are:
+
+*city_id*: ID number of each city
+*popu*: population of a city in millions.
+*was_food*: the amount of food thrown on the street an year, in tons
+*rat_sight*: the number of rat sighting an year
+
+```{r}
+library(truncnorm) # for function rtruncnorm() that allow to set the max and min for normal dist
+options(scipen = 999)
+```
+
+
+**Simulate the data**
+```{r}
+set.seed(9252568)
+city_id <- c(1:2000)
+popu <- rtruncnorm(n = 2000, a = 0.05, mean = 1, sd = 1)
+was_food <- rtruncnorm(2000, a = 10, mean = 30, sd = 20)
+
+rat_sight <- round(700.5 + 8.7*popu + 12.7*was_food + rnorm(2000, mean = 0.5),1)
+
+rat <- data.frame(city_id, popu, was_food, rat_sight)
+```
+
+**Analysis**
+```{r}
+# operate the linear regression for analyzing
+rat_model <- lm(rat_sight~ popu + was_food, data = rat)
+
+summary(rat_model)
+```
+
+## Replication
+
+**Simulation**
+```{r}
+set.seed(92525568)
+
+city_id <- c(1:2000)
+popu <- rtruncnorm(n = 2000, a = 0.05, mean = 1, sd = 1)
+was_food <- rtruncnorm(2000, a = 10, mean = 30, sd = 20)
+
+rat_sight <- round(700.5 + 8.7*popu + 12.7*was_food + rnorm(2000, mean = 0.5),1)
+
+rat_rep <- data.frame(city_id, popu, was_food, rat_sight)
+```
+
+**Analysis**
+```{r}
+rep <- lm(rat_sight~ popu + was_food, data = rat_rep)
+summary(rep)
+```
+
+The results are quite similar after changing the seed.
+
+```{r}
+sessionInfo()
+```
+
+

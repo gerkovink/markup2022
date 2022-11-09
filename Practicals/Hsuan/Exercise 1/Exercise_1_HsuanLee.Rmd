@@ -1,0 +1,76 @@
+---
+title: "Exercise 1"
+author: "Hsuan Lee"
+output: 
+  html_document:
+    css: style.css
+---
+
+**8 Monte Carlo Simulation Exercise**
+
+Question a and b
+
+```{r}
+set.seed(9252568)
+
+# n.sample is number of samples that we wanna sample
+# size is the sample size of each sample
+# mean is the sample mean of each sample that we sampled form
+# sd is the sample sd of each sample that we sampled from
+
+sample_samples <- function(n.sample, size, mean, sd){
+  
+  # create the matrix to store each values in each sample
+  samples <- matrix(0, nrow = size, ncol = n.sample)
+  colnames(samples) <- c(1:n.sample)
+  
+  # create the matrix to store means, absolute bias, SE, 95% CI, sample bias for each sample
+  info_sample <- data.frame(matrix(0, nrow = n.sample, ncol = 6))
+  colnames(info_sample) <- c("means", "abs_bias", "SE", "low_95_CI", "high_95_CI",
+                             "sample_bias")
+  
+  # sample samples
+  for (i in 1:n.sample) {
+    samples[,i] <- rnorm(n = size, mean = mean, sd = sd)
+  }
+  
+  # display the info of each sample
+  for (i in 1:n.sample) {
+    info_sample[i,1] <- mean(samples[,i])
+    info_sample[i,2] <- abs(info_sample[i,1] - mean)
+    info_sample[i,3] <- sd(samples[,i]) / sqrt(size)
+    info_sample[i,4] <- mean(samples[,i]) - 1.96*info_sample[i,3]
+    info_sample[i,5] <- mean(samples[,i]) + 1.96*info_sample[i,3]
+    info_sample[i,6] <- ifelse((info_sample[i,4] > mean) | (info_sample[i,5] < mean),
+                               "Biased", "Correct")
+  }
+  
+  return(info_sample)
+}
+
+# draw the samples
+my_draw <- sample_samples(100, 1000, 2, 0.8) 
+```
+
+Question c
+
+```{r, results='hide', message=F, warning=FALSE}
+library(tidyverse)
+```
+
+```{r, warning = FALSE, message = FALSE, error = FALSE, results='hide', fig.keep = 'all', out.width = "100%", fig.align = 'center'}
+ggplot(data = my_draw, aes(x = 1:100, y = means)) +
+  geom_point(color = "#585858") +
+  geom_errorbar(aes(ymin = low_95_CI, ymax = high_95_CI, colour = sample_bias)) +
+  scale_color_manual(values=c("Blue", "#383838"), name = "Biased Sample", ) +
+  geom_hline(yintercept = 2, color = "Red", linetype = "dashed") +
+  labs(x="Simulations", y = "95% Confident Interval") +
+  theme_classic()
+```
+
+Question d
+
+```{r}
+my_draw %>% filter(sample_bias == "Biased")
+```
+
