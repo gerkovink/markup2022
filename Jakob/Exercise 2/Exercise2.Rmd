@@ -1,0 +1,31 @@
+---
+title: "Exercise 2 - Reproducible Programming"
+author: "Jakob Nolte"
+date: "Sep 28, 2022"
+output: html_notebook
+---
+
+The given document simulates the analysis from a randomized control trial. Specifically, it fits a linear model explaining the trial's outcome as a function of its treatment and the patient's baseline score.
+
+```{r simulation}
+set.seed(123) # set the seed for comparison
+n <- 500 # total sample size
+treatment <- rbinom(n,1,0.3) # simulate treatment variable
+baseline <- rnorm(n,30,5) # simulate confounding variable
+outcome <- 25 + 3.8*treatment + 1.2*baseline + rnorm(n,0,5) # compute outcome as function of predictors and random noise
+data <- data.frame(outcome, treatment, baseline) # store variables in a data frame
+```
+
+```{r}
+summary(lm(outcome ~ treatment + confounder, data=data)) # compute the treatment's effect
+```
+
+```{r}
+plot(x=data$baseline, y=data$outcome, col=(data$treatment+1),
+        xlab="baseline", ylab="outcome") # plot the treatment's effect
+```
+
+```{r}
+sessionInfo() # display session info
+```
+
