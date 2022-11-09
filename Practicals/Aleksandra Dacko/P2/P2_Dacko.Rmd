@@ -1,0 +1,52 @@
+---
+title: "P2_ADacko"
+author: "Aleksandra Dacko"
+date: "11/1/2022"
+output: html_document
+---
+# This is my function simulating the multilevel hidden markov model observations and state sequence.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(mHMMbayes)
+```
+
+
+### Specify conditions 
+```{r}
+n_t <- 100
+n <- 10
+m <- 2
+n_dep <- 1
+q_emiss <- 3
+gamma <- matrix(c(0.8, 0.2,
+                  0.3, 0.7), ncol = m, byrow = TRUE)
+emiss_distr <- list(matrix(c(0.5, 0.5, 0.0,
+                        0.1, 0.1, 0.8), nrow = m, ncol = q_emiss, byrow = TRUE))
+
+```
+### Run the simulation function
+```{r}
+set.seed(1234)
+data1 <- sim_mHMM(n_t = n_t, n = n, gen = list(m = m, n_dep = n_dep, q_emiss = q_emiss),
+                  gamma = gamma, emiss_distr = emiss_distr, var_gamma = .5, var_emiss = .5)
+
+```
+### Run mhmm() function over the sumulated data set 
+```{r, results='hide'}
+out_2st_sim <- mHMM(s_data = data1$obs,
+                 gen = list(m = m, n_dep = n_dep, q_emiss = q_emiss),
+                 start_val = c(list(gamma), emiss_distr),
+                 mcmc = list(J = 100, burn_in = 10))
+```
+### Plot the gamma estimations and obtain the group-level gamma estimations
+```{r}
+plot(out_2st_sim)
+obtain_gamma(out_2st_sim)
+```
+### Add the session informations
+```{r}
+sessionInfo()
+```
+
+
