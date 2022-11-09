@@ -1,0 +1,79 @@
+\documentclass{beamer} 
+\usetheme{default}
+\usecolortheme{beaver}
+\usepackage{tikz}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\beamertemplatenavigationsymbolsempty
+\definecolor{light-gray}{gray}{0.1}
+
+\title[Example] {Why Cats Are Superior to Dogs - An Exercise Using \texttt{beamer} in \LaTeX}
+\author[Your Name]{E P Swens}
+\date[MLRPS]
+{\vspace{.5 in}\\ Markup Languages}
+\begin{document}
+\titlepage
+
+\begin{frame}
+\frametitle{Table of Contents}
+\tableofcontents
+\end{frame}
+
+\section{Proof}
+
+\subsection{Simple Algebraic Proof}
+\begin{frame}
+\frametitle{Simple Algebraic Proof}
+    We define a set of equations as
+    \begin{equation}
+        \text{cats} \ne \text{dogs},
+    \end{equation}
+    \begin{equation}
+    	\text{cats} > \text{dogs},
+    \end{equation}
+    \begin{equation}
+    \text{cats} = \text{cats},
+    \end{equation}
+    \begin{equation}
+    	\text{dogs} \ngtr \text{cats},
+    \end{equation}
+    $\forall \; \text{cats} \subseteq \mathbb U$. 
+\end{frame}
+
+\subsection{Prettier Algebraic Proof}
+\begin{frame}
+\frametitle{Prettier Algebraic Proof}
+    Aligning the equations by the equal sign provides a prettier proof. 
+    \begin{align}
+    	\text{cats} \ne \text{dogs},\\
+    	\text{cats} > \text{dogs}, \\
+    	\text{cats} = \text{cats},\\
+    	\text{dogs} \ngtr \text{cats}.
+    \end{align}
+\end{frame}
+
+\subsection{Uglier Algebraic Proof}
+\begin{frame}
+\frametitle{Uglier Algebraic Proof}
+Some proofs are better left unaligned
+\begin{align}
+\text{cats} &= \text{cats},\\
+\text{cats} &=\frac{\text{cats}^2}{\text{cats}},\\
+\text{cats} &=\sqrt{\frac{\text{cats}^3}{\text{cats}}}.
+\end{align}
+\end{frame}
+
+\section{Concluding}
+\begin{frame}
+\frametitle{Concluding}
+This presentation showed that
+\begin{itemize}
+\item cats are superior to dogs
+\end{itemize}
+\end{frame}
+
+
+\end{document}
+
