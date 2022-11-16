@@ -1,0 +1,132 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Beamer Presentation
+% LaTeX Template
+% Version 1.0 (10/11/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+
+\documentclass{beamer}
+
+\mode<presentation> {
+
+\usecolortheme{beaver}
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+\usepackage{amsmath}
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\setbeamerfont{title}{size=\large}
+\title{Example document to recreate with beamer in \LaTeX} % The short title appears at the bottom of every slide, the full title is only on the title page
+\author{Maaike Walraad}
+\date{}
+
+\begin{document}
+
+
+\begin{frame}
+  \titlepage  
+  %\vspace{}
+  \centering FALL 2022 \\ Markup Languages and Reproducible Programming in Statistics\par
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outline} 
+    % \tableofcontents[currentsections] % in case of using \section or \subsection
+    Working with equations \\
+    \hspace{4.5mm} Aligning the same equations \\
+    \hspace{4.5mm} Omit equation numbering \\
+    \hspace{4.5mm} Ugly alignment \\
+    \vspace{10mm}
+    Discussion
+\end{frame}
+
+\begin{frame}
+    \frametitle{Working with equations}
+    \vspace{2mm}
+    We define a set of equations as:
+    
+    \begin{equation}
+    a = b + c^2,
+    \end{equation}
+    \begin{equation}
+    a - c^2 = b,
+    \end{equation}
+    \begin{equation}
+    \text{left side = right side,}
+    \end{equation}
+    \begin{equation}
+    \text{left side + something} \geq \text{right side,}
+    \end{equation}
+    
+    for all something $>{0}$.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Aligning the same equations}
+    Aligning the equations by the equal sign gives a much better view into the placements
+of the separate equation components.
+    
+    %\begin{equation}
+    \begin{align} 
+    a &= b + c^2, \\ 
+    a - c^2 &= b, \\ 
+    \text{left side} &= \text{right side,} \\ 
+    \text{left side + something} &\geq \text{right side,}
+    \end{align} 
+    %\end{equation}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Omit equation numbering}
+    Alternatively, the equation numbering can be omitted. % by using * 
+    
+    \begin{align*} 
+    a &= b + c^2 \\ 
+    a - c^2 &= b \\ 
+    \text{left side} &= \text{right side} \\ 
+    \text{left side + something} &\geq \text{right side}
+    \end{align*}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Ugly alignment}
+    Some components do not look well, when aligned. Especially equations with different
+heights and spacing. For example,
+
+    \begin{align} 
+    E &= mc^2, \\ 
+    m &= \frac{E}{c^2}, \\ 
+    c &= \sqrt{E}{m}. 
+    \end{align} 
+
+    Take that into account.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Discussion}
+    This is where you’d normally give your audience a recap of your talk, where you could
+discuss e.g. the following
+\begin{itemize}
+    \item Your main findings
+    \item The consequences of your main findings
+    \item Things to do
+    \item Any other business not currently investigated, but related to your talk
+\end{itemize}
+\end{frame}
+
+
+\end{document} 
