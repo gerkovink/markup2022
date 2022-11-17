@@ -1,0 +1,216 @@
+---
+title: "Ex2_KP"
+author: "Kyuri Park"
+date:  "`r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE, 
+                      warning = FALSE, 
+                      comment = NA)
+```
+<style type="text/css">
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400&display=swap');
+
+body{ /* Normal  */
+  font-size: 13px;
+  font-family: 'Lato', sans-serif;
+  }
+h1.title {
+  font-size: 25px;
+  color: DarkBlue;
+  margin-bottom:5px;
+}
+h3.subtitle{ /* Subtitle */
+  font-size: 20px;
+  color: DarkBlue;
+  margin-top:0;
+}
+h1 { /* Header 1 */
+  font-size: 20px;
+  font-weight: bold;
+}
+h2 { /* Header 2 */
+  font-size: 17px;
+  line-height: 1.6;
+}
+h3 { /* Header 3 */
+  font-size: 15px;
+  line-height: 1.6;
+}
+pre { /* Code block - determines code spacing between lines */
+  font-size: 13px;
+}
+
+</style>
+<hr>
+
+# Aim
+
+1. We explore how we can derive a linear [Equilibrium Causal Model](https://link.springer.com/article/10.1007/s10670-021-00463-0) (ECM) from a random-intercept VAR(1) model. 
+2. Upon deriving the ECM, we simulate data from the corresponding model. 
+3. We try recovering the model parameters based on the simulated data.
+
+---
+
+# Set up
+
+## Load packages
+```{r}
+library(qgraph) # for visualizing network
+library(lavaan) # for fitting SEM model
+library(MASS) # for generating data
+library(future) # for parallel processing
+library(dplyr)
+library(furrr)
+```
+
+# Specify VAR(1) model
+
+VAR(1) model can be written as:
+$$ X_t = c + BX_{t-1} + \epsilon_t, \ where \ \epsilon \sim N(0, \Sigma_{\epsilon}) $$
+Let's specify the parameters of the VAR(1) model. For the sake of simplicity, we will set the number of variables to four (i.e., `p = 4`).  $B$ represents the lagged effects and the values are specified such that it can reach equilibrium (i.e., all $|eigenvalues| \leq 1$).
+
+```{r}
+# number of variable
+p = 4
+# matrix lagged parameters
+B <- matrix(c(.5,0,0,0,
+              .3,.4,.2,0,
+              0,.2,.2,-.4,
+              0,0,0,.4), p, p,byrow = T)
+
+# check stability
+all(abs(Re(eigen(B)$values)) <= 1)
+
+# network visualization
+layout <- rbind(c(0,1), 
+                c(1,1), 
+                c(1,0),
+                c(0,0))
+qgraph(t(B), edge.labels = TRUE, layout = layout, fade = FALSE, labels=LETTERS[1:p])
+```
+
+# Derive ECM
+We can acquire equilibrium model by re-scaling $B$ matrix (marginalizing out diagonal) ([Hyttinen, 2012](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://jmlr.org/papers/volume13/hyttinen12a/hyttinen12a.pdf)).
+```{r}
+# Re-scaling function for the beta matrix
+rs_beta <- function(B){
+  p <- ncol(B)
+  ind <- which(diag(B)!=0)
+  if(length(ind)== 0){ return(B)} else {
+    U <- matrix(0,p,p)
+    # Hytinnen - apply the following repeatedly for all B[i,i] != 0
+    for(i in ind){
+      # let U be a square 0 matrix with U[i,i] = 1 iff B[i,i] != 0
+      U[i,i] <- (B[i,i]/(1-B[i,i]))
+    }
+    B_t <- B - U%*%(diag(p)-B)
+    return(B_t)
+  }  
+}
+
+# Acquire equilibrium model by re-scaling: marginalizaing out diagonal (AR)
+B_eq <- rs_beta(B)
+dimnames(B_eq) <- list(LETTERS[1:p], LETTERS[1:p])
+
+# check of stability still holds
+all(abs(Re(eigen(B_eq)$values)) <= 1)
+
+# "static/cross-sectional" cyclic causal graph
+qgraph(t(B_eq), edge.labels = TRUE, layout = layout, fade = FALSE, labels=LETTERS[1:p])
+```
+
+# Extend model (multiple-subject)
+Now, we extend our model to the multiple-subject random-intercept case:
+$$ X_{i,t} = c_i + BX_{i,t-1} + \epsilon_{t-1} $$ 
+We assume the $\epsilon$ has the same variance-covariance matrix across individuals and that $B$ is shared among the subjects. We assume the intercepts ($c_i$) differ across the subjects, hence we specify a variance-covariance matrix for them. For the sake of simplicity, let's say $\mu_c$ (average intercepts across subjects) is 1.
+
+```{r}
+# Re-scaling function for the variance covariance matrix of the intercepts
+rs_sigma <- function(S, B){
+  p <- ncol(S)
+  ind <- which(diag(B)!=0)
+  if(length(ind)== 0){ return(S)} else {
+    S_t <- S
+    # Hytinnen - apply the following repeatedly for all B[i,i] != 0
+    for(i in ind){
+      # let U be a square 0 matrix with U[i,i] = 1 iff B[i,i] != 0
+      U <- matrix(0,p,p) ; I <- diag(p)
+      U[i,i] <- 1
+      S_t <- (I + (B[i,i]/(1-B[i,i]))*U)%*%S_t%*%t(I + (B[i,i]/(1-B[i,i]))*U)
+    }
+    return(S_t)
+  }  
+}
+
+# define variance covariance matrix of the intercepts
+varint <- 1
+Sigma <- diag(varint,p)
+
+# Re-scale covariance matrix for the equilibrium setting
+# necessary to generate data correctly under this model
+Sigma_eq <- rs_sigma(Sigma, B)
+Sigma_eq
+```
+
+# Simulate data
+We simulate data from the equilibrium model. The steps are as follows:  
+1. Fix the random seed.  
+2. Generate the random intercepts for each person.  
+3. Generate the equilibrium positions by *pushing them through* the matrix with the directed parameters.  
+
+```{r}
+# step 1
+myseed = 123
+nsim = 100 # number of simulations
+n <- 50000 # sample size
+I <- diag(p) # identity matrix
+library(future)
+plan(multisession)
+
+sim <- future_map(1:nsim, function(x){
+  # step 2
+  e_eq <- mvrnorm(n, mu = rep(0,p), Sigma = Sigma_eq)
+  # step 3
+  mu_data_eq <- as.data.frame(t(sapply(1:n,function(i) solve(I - B_eq)%*%e_eq[i,])))
+  # specify column names
+  colnames(mu_data_eq)<- LETTERS[1:p]
+  
+  return(SimData = mu_data_eq)
+}, .options = furrr_options(seed = myseed)
+)
+```
+
+# Fit the model (Recover parameters)
+
+```{r}
+# specify model
+mod ="
+B  ~ A + C
+C ~ B + D
+"
+# fit sem model
+fits <- lapply(sim, function(x) sem(mod, data=x, std.ov=FALSE))
+
+# estimates@Model
+beta_est <- lapply(fits, function(x) (lavInspect(x, what = "est")$beta[LETTERS[1:p],LETTERS[1:p]]))
+
+# compare with original Beta
+beta_est[1:3] ; B_eq
+```
+
+# Info session
+```{r}
+sessionInfo()
+```
+
+

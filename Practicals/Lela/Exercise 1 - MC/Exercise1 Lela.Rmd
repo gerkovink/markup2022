@@ -1,0 +1,109 @@
+---
+title: "Markdown Exercise 1"
+author: "Lela Roos (1729683)"
+date: "9/16/2022"
+output: html_document
+---
+
+# Monte Carlo simulation exercise
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+```{r}
+set.seed(563)
+```
+
+
+## Sample 100 samples
+
+```{r}
+n <- 600 # set sample size
+samps <- matrix(nrow = 100, ncol = n)
+
+for (i in 1:100){
+  samp_i <- rnorm(n)
+  for (j in 1:n){
+    samps[i,j] <- samp_i[j]
+  }
+}
+
+
+```
+
+## Calculations
+For each of these samples, calculate the following statistics for the mean:
+standard error
+lower bound of the 95% confidence interval
+upper bound of the 95% confidence interval
+
+```{r}
+stats <- function(samp){
+  bias <- mean(samp)
+  se <- sd(samp)/sqrt(length(samp))
+  CI_l <- mean(samp) - 1.96 * se
+  CI_u <- mean(samp) + 1.96 * se
+  results <- cbind(bias, se, CI_l, CI_u)
+  return(results)
+}
+  
+summstats <- matrix(nrow = 100, ncol = 4)
+
+for (i in 1:100){
+  summs <- stats(samps[i,])
+  for (j in 1:4){
+    summstats[i,j] <- summs[j]
+  }
+}
+```
+
+
+```{r}
+summstats <- as.data.frame(summstats)
+colnames(summstats) <- c("Bias", "SE", 
+                         "Lowerbound_CI", "Upperbound_CI")
+summstats <- summstats  %>% 
+  mutate(id = row_number(), .before = 1)
+
+samps <- as.data.frame(samps)
+samps <- samps  %>% 
+  mutate(id = row_number(), .before = V1)
+
+```
+
+## Plot
+"A replication of the procedure that generates a 95% confidence interval that is centered around the sample mean would cover the population value at least 95 out of 100 times" (Neyman, 1934)
+
+```{r}
+ggplot(summstats, 
+       aes(x = 1:nrow(summstats),
+           y = Bias,
+           colour = !(Lowerbound_CI > 0 | Upperbound_CI < 0))) +
+  scale_colour_manual(name = 'Contains true value', 
+                      values = setNames(c('black','red'),
+                                        c(T, F))) +
+  labs(x="Mean", y = "Index") +
+  ylim (-0.3, 0.3) +
+  geom_errorbar(aes(ymin=Lowerbound_CI, ymax=Upperbound_CI)) +
+  geom_point() + 
+  geom_hline(yintercept=0, linetype="dashed", color = "green")
+
+
+```
+## CIs not containing population mean
+
+```{r}
+outside_samp_stats <- summstats %>% 
+  rename(Mean = Bias) %>% 
+  filter(Lowerbound_CI > 0 | Upperbound_CI < 0)
+
+print(outside_samp_stats[,2:5])
+```
+
+```{r}
+# save samples
+outside_samps <- samps %>% 
+  filter(id %in% outside_samp_stats$id)
+```
+
+
