@@ -1,0 +1,86 @@
+\documentclass[11pt, aspectratio=169]{beamer}
+\usetheme{default}
+\usecolortheme{beaver}
+\beamertemplatenavigationsymbolsempty
+
+\usepackage{amsmath}
+
+\title{Example document to recreate with \texttt{beamer} in \LaTeX}
+\author{Daniel Anadria}
+\date{November 18, 2022}
+
+
+\begin{document}
+	
+	\begin{frame}[plain]
+		\titlepage
+		\vspace{\fill}
+		\centering FALL 2019\\Markup Languages and Reproducible Programming in Statistics
+	\end{frame}
+	
+	
+	\begin{frame}{Outline}
+		\hyperlink{working}{Working with equations} \\
+		\hspace{5mm} \hyperlink{aligning}{Aligning the same equations} \\
+		\hspace{5mm} \hyperlink{omit}{Omit equation numbering} \\
+		\hspace{5mm} \hyperlink{ugly}{Ugly alignment} \\
+		\vspace{10mm}
+		\hyperlink{discussion}{Discussion}
+	\end{frame}
+	
+	
+	\begin{frame}[label=working]{Working with equations}
+		We define a set of equations as
+		\begin{equation} a = b + c^2, \end{equation}
+		\begin{equation} a - c^2 = b, \end{equation}
+		\begin{equation} \text{left side = right side,} \end{equation}
+		\begin{equation} \text{left side + something} \geq \text{right side,} \end{equation}
+		for all something $> 0$.
+	\end{frame}
+	
+	
+	\begin{frame}[label=aligning]{Aligning the same equations}
+		Aligning the equations by the equal sign gives a much better view into the placements of the separate equation components.
+		\begin{align}
+			a &= b + c^2, \\
+			a - c^2 &= b, \\
+			\text{left side} &= \text{right side,} \\
+			\text{left side + something} &\geq \text{right side,}
+		\end{align}
+	\end{frame}
+	
+	
+	\begin{frame}[label=omit]{Omit equation numbering}
+		Alternatively, the equation numbering can be omitted.
+		\begin{align*}
+			a &= b + c^2 \\
+			a - c^2 &= b \\
+			\text{left side} &= \text{right side} \\
+			\text{left side + something} &\geq \text{right side}
+		\end{align*}
+	\end{frame}
+	
+	
+	\begin{frame}[label=ugly]{Ugly alignment}
+		Some components do not look well, when aligned. Especially equations with different heights and spacing. For example,
+		\begin{align}
+			E &= mc^2, \\
+			m &= \frac{E}{c^2}, \\
+			c &= \sqrt{\frac{E}{m}}.
+		\end{align}
+		Take that into account.
+	\end{frame}
+	
+	
+	\begin{frame}[label=discussion]{Discussion}
+		This is where you’d normally give your audience a recap of your talk, where you could discuss e.g. the following
+		\begin{itemize}
+			\item Your main findings
+			\item The consequences of your main findings
+			\item Things to do
+			\item Any other business not currently investigated, but related to your talk
+		\end{itemize}
+	\end{frame}
+	
+	
+\end{document}
