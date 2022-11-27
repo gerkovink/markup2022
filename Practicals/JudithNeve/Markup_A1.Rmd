@@ -1,0 +1,54 @@
+---
+title: "Markup Assignment 1"
+author: "Judith Neve"
+date: '2022-09-19'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# sample 100 samples from a normal distribution
+set.seed(0070661)
+n <- 5000
+sim_dat <- matrix(NA, n, 100)
+for (i in 1:100) {
+  sim_dat[,i] <- rnorm(n)
+}
+```
+
+```{r}
+sim_stats <- matrix(NA, 100, 4)
+colnames(sim_stats) <- c("AbsoluteBias", "StandardError", "LowerBound", "UpperBound")
+
+# for each sample, calculate:
+for (i in 1:100) {
+  sim_stats[i,1:2] <- c(mean(sim_dat[,i]), # absolute bias (the mean was 0 so the mean of the sample works)
+                     1/sqrt(n)) # standard error
+  sim_stats[i,3:4] <- c(sim_stats[i,1] - qt(.975, n-1)*sim_stats[i,2], # lower bound of the CI
+                        sim_stats[i,1] + qt(.975, n-1)*sim_stats[i,2]) # upper bound of the CI
+}
+```
+
+```{r}
+# create a plot that demonstrates the following:
+## “A replication of the procedure that generates a 95% confidence interval that is centered around the sample mean would cover the population value at least 95 out of 100 times” (Neyman, 1934)
+
+library(tidyverse)
+
+sim_stats <- sim_stats %>%
+  as.data.frame() %>%
+  mutate(MeanInInt = ifelse(0 > LowerBound & 0 < UpperBound, TRUE, FALSE))
+
+sim_stats %>%
+  ggplot(aes(x = 1:100, y = AbsoluteBias)) +
+  geom_pointrange(aes(ymin = LowerBound, ymax = UpperBound, col = MeanInInt))
+```
+
+```{r}
+# Present a table containing all simulated samples for which the resulting confidence interval does not contain the population value
+othersamples <- sim_dat[,sim_stats$MeanInInt == FALSE]
+```
+
