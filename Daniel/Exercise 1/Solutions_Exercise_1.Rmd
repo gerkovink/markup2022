@@ -1,0 +1,125 @@
+---
+title: "Markup Solutions Exercise 1"
+author: "Daniel Anadria"
+date: 15 September 2022
+output:
+  html_document:
+    css: style.css
+    
+---
+<p style="text-align: center;">**Exercise 1: Git and Monte Carlo simulation with a GitHub flavor**</p>
+
+
+In this exercise, I sample 100 samples from a normal distribution with the mean $\mu = 100$ and the standard deviation $\sigma = 15$..
+For each of the samples, I calculate the following statistics for the mean:
+
+- absolute bias
+- standard error
+- lower bound of the 95% confidence interval
+- upper bound of the 95% confidence interval
+
+Finally, I plot the resulting 95% confidence intervals.
+
+```{r, echo=T, results='hide'}
+# defining population values
+population <- new.env()
+population$mean <- 100
+population$sd <- 15
+as.list(population)
+
+# 100 samples of 1000 observations from the population
+set.seed(123) # for reproducibility
+samples <- data.frame(matrix(ncol = 100, nrow = 1000))
+for (i in 1:100){
+  samples[,i] <- rnorm(n = 1000, mean = 100, sd = 15)}
+```
+
+Computing the sample means:
+
+```{r}
+samplemeans <- data.frame(matrix(ncol = 100, nrow = 1))
+for (i in 1:100){
+  samplemeans[,i] <- mean(samples[,i])}
+```
+
+Computing the absolute bias for each sample:
+
+```{r}
+absolutebias <- data.frame(matrix(ncol = 100, nrow = 1))
+for (i in 1:100){
+  absolutebias[,i] <- abs(population$mean - samplemeans[,i])}
+```
+
+Computing the standard errorfor each sample:
+
+```{r}
+# SD of every sample
+sampleSDs <- data.frame(matrix(ncol = 100, nrow = 1))
+for (i in 1:100){
+  sampleSDs[,i] <- sd(samples[,i])}
+
+# SE of every sample
+sampleSEs <- data.frame(matrix(ncol = 100, nrow = 1))
+for (i in 1:100){
+  sampleSEs[,i] <- sampleSDs[,i] / sqrt(nrow(samples))}
+
+```
+
+95% confidence interval for each sample:
+
+```{r}
+# lower bound
+CIlower <- data.frame(matrix(ncol = 100, nrow = 1))
+for (i in 1:100){
+  CIlower[,i] <- samplemeans[,i] - 1.959964 * sampleSEs[,i]}
+
+# upper bound
+CIupper <- data.frame(matrix(ncol = 100, nrow = 1))
+for (i in 1:100){
+  CIupper[,i] <- samplemeans[,i] + 1.959964 * sampleSEs[,i]}
+```
+
+Preparing the data for `ggplot2`:
+
+```{r, results='hide', message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+```{r}
+data <- data.frame(sample_id = 1:100, lower_bound = t(CIlower), sample_mean = t(samplemeans), upper_bound = t(CIupper), row.names = 1:100)
+
+data$sample_biased <- ifelse((data$upper_bound < 100) | (data$lower_bound > 100), "Yes", "No")
+
+data_long <- data %>% pivot_longer(c(2,4), names_to = "Statistic", values_to = "Values")
+
+```
+
+Plotting the 95% confidence interval for each sample:
+
+```{r, warning = FALSE, message = FALSE, error = FALSE, results='hide', fig.keep = 'all', out.width = "100%", fig.align = 'center'}
+
+ggplot(data_long, aes(x = Values, y = sample_id)) + 
+   geom_line(aes(colour = sample_biased, group = sample_id)) +
+   scale_color_manual(values=c("#00000f", "#a10a02"), name = "Biased Sample", )+
+   geom_point(aes(sample_mean), size = 0.75, show.legend = T)+
+   geom_line(aes(x = population$mean), linetype = "solid") +
+   xlab("95% Confidence Intervals") +
+   ylab("Simulation Number")+
+   theme_classic()
+
+```
+
+<p style="text-align: center;">*“A replication of the procedure that generates a 95% confidence interval that is centered around the sample mean would cover the population value at least 95 out of 100 times” (Neyman, 1934)*</p>
+\n
+
+```{r}
+table(data$sample_biased)
+```
+In line with the Neyman's quote, in our simulated data, 6% of confidence intervals did not contain the true population mean. This is close to the expectation of 5% of the 95% confidence intervals will not contain the true population parameter. In an infinitely large sample, this proportion would equal exactly 5%. 
+\n
+Here I present a table containing all simulated samples for which the resulting confidence interval does not contain the population mean.
+\n
+```{r}
+data %>% filter(sample_biased == 'Yes')
+```
+
