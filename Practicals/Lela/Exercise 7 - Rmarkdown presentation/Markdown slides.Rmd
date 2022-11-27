@@ -1,0 +1,100 @@
+---
+title: "Markdown Presentation"
+author: "Lela Roos (1729683)"
+date: "11/27/2022"
+output: ioslides_presentation
+logo: UU_logo.png
+---
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+## Normal distributions
+
+<center>
+![](https://www.siliconrepublic.com/wp-content/uploads/2015/10/Statistician_memes_10.png){width=50%}
+</center>
+
+## Simulate some data
+We can simulate data from a normal distribution as follows:
+
+```{r}
+set.seed(144)
+x1 <- rnorm(n= 1000, 0, 1)
+x2 <- rnorm(n=1000, 3, 4)
+
+data <- as.data.frame(cbind(x1, x2))
+```
+
+## Multivariate normal
+You could also sample form a multivariate normal distributions,
+but we won't do that here.
+```{r, eval=FALSE}
+require(MASS)
+Sigma <- matrix(c(7,5,5,9),2,2)
+data_mv <- as.data.frame(mvrnorm(n = 1000, rep(0, 2), Sigma))
+```
+
+
+## An interactive table
+```{r}
+require(DT, warn.conflicts = F)
+datatable(data, options = list(pageLength = 5))
+```
+## Pivot data
+```{r}
+require(reshape, warn.conflicts = F)
+data <- melt(data)
+datatable(data, options = list(pageLength = 5))
+```
+
+
+
+
+## A not so still figure
+
+```{r, ECHO = FALSE}
+require(plotly)
+
+p <- ggplot(data, aes(x = value, fill = variable)) + 
+  geom_density(alpha=.25) + 
+  ggtitle("Normal densities")
+
+ggplotly(p)
+```
+
+## I have two things to show here
+
+<div style="float: left; width: 50%;">
+The distribution of $X_1$:
+ $$X_1 \sim  \mathcal{N}(0, 1).$$
+</div>
+
+<div style="float: right; width: 50%;">
+The distribution of $X_2$:
+ $$X_2 \sim  \mathcal{N}(3, 4).$$
+</div>
+
+<div style="clear: both;"></div>
+So two beautiful normal distributions.
+
+## Even more equations
+This doesn't relate to the normal density stuff, but we can take
+the inverse of functions:
+
+$$
+\begin{align}
+g_i(\mu_{ij}) &= \nu_{i} + \lambda_i \eta_j \\
+\mu_{ij} &= g_i^{-1}(\nu_{i} + \lambda_i \eta_j).
+\end{align}
+$$
+
+These relate to the Generalized Linear Factor Analysis Framework, originally proposed by 
+
+
+
+
+
+
+
+
