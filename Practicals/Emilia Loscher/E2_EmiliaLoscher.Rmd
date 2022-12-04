@@ -1,0 +1,183 @@
+---
+title: "Exercise 2"
+author: "Emilia Löscher"
+date: "2022-09-28"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Aim
+The aim is to compare different approaches for classification based on the MSE with the help of cross validation. The models that we are going to compare are the following:
+- logistic regression (lr)
+- linear discriminant analysis (lda)
+- random forest (rf)
+
+# Set up
+We are using the cardiovascular disease dataset of 253 patients (from the SLV course). The data set is split into a five parts, so that while performing cross validation, the training data set always consists of 80\% and a test data set consists of 20\% of the original data set. As this splitting of the data set is random, it requires using RNG. 
+
+Using cross validation, the three models are fit to the respective training data set, always leaving out one fifth in turn. Then predictions are made for the 20\% of the data which make up the test data set. 
+By comparing these predictions to the "true" outcomes, the MSE is obtained. 
+
+Hence, we obtain a 3x5-matrix containing the results. By taking the mean across the cross validation for each model, we can compare which model performs best by identifying the model with the lowest mean MSE. 
+
+# Setting the seed 
+
+```{r}
+set.seed(2010)
+```
+
+# Packages required and data
+```{r}
+library(ggplot2)
+library(randomForest)
+library(MASS)
+library(tidyverse)
+library(utils)
+
+
+cardio <- read.csv("cardiovascular_treatment.csv") %>% 
+  mutate(severity = as.factor(severity),
+         gender   = as.factor(gender),
+         dose     = as.factor(dose),
+         response = as.factor(response))
+```
+
+# Code for the cross validation and MSE
+
+```{r}
+#MSE function
+mse <- function(y_true, y_pred) mean((y_true - y_pred)^2)
+
+myCV <- function(k = 5, data = cardio){
+   mse_mat <- matrix(NA,  ncol = k, nrow = 4)
+  
+  split <- c(rep(1:k, floor(nrow(data)/k)), 1:(nrow(data)%%k))
+  split_shuff <- sample(split, length(split) )
+  #adding column to randomly split the data set
+  data$split <- split_shuff
+  for(i in 1:k){
+    #splitting the data set for each k into train and test
+    data_train <- data[which(data$split != i),]
+    data_test <- data[which(data$split == i),]
+  #fitting the different models
+    #logistic regression
+    lr <- glm(response~ ., data = data_train, family= "binomial")
+    
+    #lda
+    lda <- lda(response~. , data = data_train)
+    
+    #random forest
+    rf <- randomForest(response ~., data = data_train)
+      
+    model_list <- list(lr, lda, rf)
+    pred_list <- list()
+    pred_list[[1]] <- ifelse(predict(lr, newdata = data_test) < 0.5, 0,1)
+    pred_list[[2]] <- rbernoulli(nrow(data_test),p=  predict(lr, newdata = data_test))
+    pred_list[[3]] <- predict(lda, newdata = data_test)$class
+    pred_list[[4]] <- predict(rf, newdata = data_test)
+    for(j in 1:4){
+     mse_mat[j,i] <- mse(as.numeric(data_test$response), as.numeric(pred_list[[j]]))
+    } 
+  }
+  return(mse_mat)
+}
+mse_res <- myCV()
+rownames(mse_res) <- c("lr_cut", "lr_bern", "lda", "rf")
+  
+rowMeans(mse_res)
+```
+ 
+# Presentation, visualization, and discussion of results 
+```{r}
+results <- data.frame("names"= rownames(mse_res), "mse" = rowMeans(mse_res))
+ggplot(results, aes(x = names, y = mse, fill= names))+
+  geom_bar(stat ="identity")+
+   labs(
+    x     = "Method", 
+    y     = "Mean squared error", 
+    title = "Comparing regression method prediction performance")
+```
+It can be seen that regarding the MSE, the linear discriminant analysis performs best (MSE = 0.3756). The Random Forest method has a similar performance with a MSE of 0.3871. The logistic regression methods perform worst. It does not make much of a difference if the classification is done according to a cut-off value of 0.5 or using a bernoulli distribution with the obtained probabilities. The MSEs are 1.8227 (cut-off) and 1.8388 (bernoulli).
+
+# Replication of the analysis
+When we use the same code as before with another seed to see if we obtain the same results. They will be slightly different, but the order of performance of the different methods should be the same. 
+
+```{r}
+set.seed(2110)
+
+library(ggplot2)
+library(randomForest)
+library(MASS)
+library(tidyverse)
+library(utils)
+
+
+cardio <- read.csv("cardiovascular_treatment.csv") %>% 
+  mutate(severity = as.factor(severity),
+         gender   = as.factor(gender),
+         dose     = as.factor(dose),
+         response = as.factor(response))
+
+#MSE function
+mse <- function(y_true, y_pred) mean((y_true - y_pred)^2)
+
+myCV <- function(k = 5, data = cardio){
+   mse_mat <- matrix(NA,  ncol = k, nrow = 4)
+  
+  split <- c(rep(1:k, floor(nrow(data)/k)), 1:(nrow(data)%%k))
+  split_shuff <- sample(split, length(split) )
+  #adding column to randomly split the data set
+  data$split <- split_shuff
+  for(i in 1:k){
+    #splitting the data set for each k into train and test
+    data_train <- data[which(data$split != i),]
+    data_test <- data[which(data$split == i),]
+  #fitting the different models
+    #logistic regression
+    lr <- glm(response~ ., data = data_train, family= "binomial")
+    
+    #lda
+    lda <- lda(response~. , data = data_train)
+    
+    #random forest
+    rf <- randomForest(response ~., data = data_train)
+      
+    model_list <- list(lr, lda, rf)
+    pred_list <- list()
+    pred_list[[1]] <- ifelse(predict(lr, newdata = data_test) < 0.5, 0,1)
+    pred_list[[2]] <- rbernoulli(nrow(data_test),p=  predict(lr, newdata = data_test))
+    pred_list[[3]] <- predict(lda, newdata = data_test)$class
+    pred_list[[4]] <- predict(rf, newdata = data_test)
+    for(j in 1:4){
+     mse_mat[j,i] <- mse(as.numeric(data_test$response), as.numeric(pred_list[[j]]))
+    } 
+  }
+  return(mse_mat)
+}
+mse_res <- myCV()
+rownames(mse_res) <- c("lr_cut", "lr_bern", "lda", "rf")
+  
+print(rowMeans(mse_res))
+
+results <- data.frame("names"= rownames(mse_res), "mse" = rowMeans(mse_res))
+ggplot(results, aes(x = names, y = mse, fill= names))+
+  geom_bar(stat ="identity")+
+   labs(
+    x     = "Method", 
+    y     = "Mean squared error", 
+    title = "Comparing regression method prediction performance")
+```
+
+We see that the ranking of the methods is similar and the values of the MSEs vary a bit: 
+Before: 1.8226667(lr_cut) 1.8388235 (lr_bern) 0.3756078 (lda) 0.3871373 (rf)
+Now: 1.6040784 (lr_cut) 1.5529412 (lr_bern) 0.3597647 (lda) 0.4466667 (rf)
+
+There is now a larger difference between the linear discriminant analysis and the random forest method. The LDA still performs best with respect to the MSE. Now, the cut off logistic regression performs worse than the bernoulli logistic regression.   
+
+
+# Session info
+```{r}
+sessionInfo()
+```
+

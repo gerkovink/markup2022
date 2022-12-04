@@ -1,0 +1,65 @@
+---
+title: "Monte Carlo Simulation"
+author: "Emilia Löscher"
+date: '2022-09-14'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# 8 
+##Monte Carlo simulation exercise
+
+Perform a small simulation that does the following:
+a. Sample 100 samples from a standard normal distribution.
+
+```{r}
+library(ggplot2)
+library(dplyr)
+set.seed(1409)
+N <- 100 #Number of samples
+n <- 1000 #Size of each sample 
+samples <- matrix(rnorm(n*N), nrow = n, ncol = N, byrow = FALSE) 
+#samples in column of size 1000 (n)
+```
+
+b. For each of these samples, calculate the following statistics for the mean:
+- absolute bias
+- standard error
+- lower bound of the 95% confidence interval
+- upper bound of the 95% confidence interval
+
+```{r}
+sample_mean <-  abs_bias <-  std_error <-  low_CI <-  up_CI <- length(N)
+for(i in 1:ncol(samples)){
+  sample_mean[i] <- mean(samples[,i])
+  abs_bias[i] <- abs(sample_mean[i] - 0)
+  std_error[i] <- sd(samples[,i])/sqrt(n)
+  low_CI[i] <- sample_mean[i] - 1.96 * std_error[i]
+  up_CI[i] <- sample_mean[i] + 1.96 * std_error[i]
+}
+
+mcs_list <- list(sample_mean, abs_bias, std_error, low_CI, up_CI)
+```
+
+
+c. Create a plot that demonstrates the following:
+“A replication of the procedure that generates a 95% confidence interval that is centered around the sample mean would cover the population value at least 95 out of 100 times” (Neyman, 1934)
+```{r}
+data <- data.frame(Sample = 1:N, mean= sample_mean, lower = low_CI, upper = up_CI)
+
+ggplot(data, aes(mean, Sample)) +        # ggplot2 plot with confidence intervals
+  geom_point() +
+  geom_errorbar(aes(xmin = lower, xmax = upper))+
+  geom_vline(xintercept = 0,color = "red", size = 0.5)
+
+```
+
+d. Present a table containing all simulated samples for which the resulting confidence interval does not contain the population value.
+```{r}
+data %>% filter(lower > 0 | upper < 0)
+```
+
+5 samples as expected when using a 95\% confidence interval. 
+
+
