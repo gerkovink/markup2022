@@ -1,0 +1,156 @@
+---
+title: "Tuning random forest hyperparameters"
+author: "Judith Neve"
+date: '2022-12-14'
+output:
+  ioslides_presentation:
+    logo: logo.png
+    widescreen: true
+bibliography: Thesis.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+library(tidyverse)
+```
+
+# Introduction
+
+## Random forests
+
+*Main idea*: combine many decision trees to classify an observation
+
+At each split, only a fraction of the predictors are sampled to consider a split.
+
+## Hyperparameters
+
+- Number of trees
+- Number of candidate predictors
+- Proportion of the sample used for fitting the tree
+- Sample with or without replacement
+- Minimum node size
+- Split rule
+
+## Tuning
+
+Trying multiple options to find the best values!
+
+## Previous research
+
+Default values can lead to good *accuracy*, but *discrimination* and *calibration* are typically bad.
+
+## Current research
+
+How can we tune hyperparameters to improve overall model performance, taking computational intensivity into account?
+
+Three studies:
+
+- *Study 1: which hyperparameters to tune?*
+- Study 2: what metric to optimise?
+- Study 3: which hyperparameter search strategy to use?
+
+
+# Methods
+
+## Data simulation
+
+Vary data characteristics:
+
+- Number of predictors: 8, 16, 32
+- Event fraction: 0.1, 0.3, 0.5
+- Sample size: 0.5$n$, $n$, 2$n$ ($n$ the required sample size to detect predictor effects for an AUC of 0.8; @riley_calculating_2020)
+
+Simulated using **logistic regression with strong interactions**: $$\begin{align} P(y_i = 1) & = \frac{exp(\mathbf\beta\mathbf{X})}{1 + exp(\mathbf\beta\mathbf{X})} \\& = \frac{exp(\beta_0 + \beta*\sum_{j=1}^px_{ij} + \gamma*\sum_{j=1}^{0.25*p}x_{ij}*x_{i(j+0.5p)})}{1 + exp(\beta_0 + \beta*\sum_{j=1}^px_{ij} + \gamma*\sum_{j=1}^{0.25*p}x_{ij}*x_{i(j+0.5p)})} \end{align}$$
+
+## Data simulation
+
+```{r, cache =TRUE, echo=FALSE}
+load("tuneonce.RData")
+all_perf_dataset1 <- all_perf
+dat1 <- dat
+val_dataset1 <- val_dataset
+load("tuneonce2.RData")
+all_perf_dataset2 <- all_perf
+dat2 <- dat
+val_dataset2 <- val_dataset
+
+rm(list=ls()[!ls() %in% c("all_perf_dataset1", "all_perf_dataset2", "dat1", "dat2", "val_dataset1", "val_dataset2", "betas_matrix")])
+
+all_perf_dataset1 <- all_perf_dataset1 %>% 
+  mutate(dataset_id = 1)
+all_perf_dataset2 <- all_perf_dataset2 %>% 
+  mutate(dataset_id = 2)
+all_perf <- rbind(all_perf_dataset1, all_perf_dataset2)
+```
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+dat1 %>% 
+  as.data.frame() %>% 
+  mutate(Y = as.factor(Y),
+         Pred_value = as.numeric(Pred_value)) %>% 
+  pivot_wider(names_from = "Pred_number", values_from = "Pred_value") %>% 
+  mutate(Prob = exp(betas_matrix[1,3] + betas_matrix[1,4]*sum(X1:X8) + betas_matrix[1,5]*(X1*X5 + X2*X6))/(1+exp(betas_matrix[1,3] + betas_matrix[1,4]*sum(X1:X8) + betas_matrix[1,5]*(X1*X5 + X2*X6)))) %>%
+  ggplot(aes(x = Prob, col = Y, fill = Y)) +
+  geom_density(alpha = 0.2) +
+  theme_minimal()
+```
+
+
+## Manipulations
+
+Vary hyperparameters that are tuned when fitting a random forest.
+
+<div class="columns-2">
+  Always tuned:
+
+  - Number of predictors
+  - Minimum node size
+
+  All combinations of:
+
+  - Number of trees
+  - Sample fraction
+  - Sampling with replacement
+  - Split rule
+</div>
+
+## Settings
+
+```{r, eval=FALSE, echo = TRUE}
+hyperparameter_combinations <- expand.grid(
+  mtry = TRUE,
+  sample.fraction = c(TRUE, FALSE),
+  num.trees = c(TRUE, FALSE),
+  replace = c(TRUE, FALSE),
+  min.node.size = TRUE,
+  splitrule = c(TRUE, FALSE)
+)
+hyperparameter_combinations <- rbind(rep(FALSE, ncol(hyperparameter_combinations)),
+                                     hyperparameter_combinations)
+```
+
+
+# Results
+
+## Mean performances
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+require(DT)
+
+datatable(
+  all_perf %>% 
+    pivot_longer(Runtime:CohensKappa, names_to = "Metric", values_to = "Performance") %>% 
+    group_by(Metric, `Tuned hyperparameters`) %>% 
+    summarise(`Performance mean` = mean(Performance),
+              `Performance SD` = sd(Performance)),
+  options = list(pageLength = 5)
+)
+```
+
+## Discussion
+
+![](https://media.giphy.com/media/WHLf9qDDS97EY/giphy.gif)
+
+## References
+
