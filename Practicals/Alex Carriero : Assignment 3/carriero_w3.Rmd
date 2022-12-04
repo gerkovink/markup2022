@@ -11,6 +11,7 @@ output:
      colortheme: "beaver"
      fonttheme: "professionalfonts"
      keep_tex: TRUE
+     fontsize: "11pt"
 header-includes:
   - \title{Welcome to \LaTeX{} Workshop}
 ---

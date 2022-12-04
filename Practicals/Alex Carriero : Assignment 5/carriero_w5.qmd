@@ -1,0 +1,192 @@
+---
+title: "Class Imbalance"
+subtitle: "A problem we can fix?" 
+editor: visual
+bibliography: presy.bib
+
+format: 
+  revealjs:
+    author: Alex Carriero 
+    theme: serif
+    slide-number: true
+    logo: uu_umc.png
+    scrollable: true
+---
+
+## Outline {.smaller}
+
+\
+
+::: incremental
+-   Background
+-   Research Question
+-   Methods
+-   Results
+-   Discussion / Questions
+:::
+
+## Introduction {.smaller}
+
+```{r, echo = F}
+# set up -- excuted but not displayed 
+
+# libraries
+library(tidyverse)
+library(MASS)
+
+# functions
+source("functions.R")
+```
+
+::: columns
+::: {.column width="50%"}
+\
+\
+\
+**Context:** Clinical prediction modelling for dichotomous risk prediction.\
+\
+\
+**Problem:** Class Imbalance
+:::
+
+::: {.column width="50%"}
+```{r, echo = F, cache = T}
+# Generate data exhibiting class imbalance 
+sc <- scenario(npred = 2, ev = 0.003, n.level = 1, dmu = 1.6)
+df <- generate_data(sc)
+```
+
+```{r, fig.height = 6, fig.width = 6}
+visualize(df)
+```
+:::
+:::
+
+## Introduction {.smaller}
+
+@ruben results:
+
+![](ruben.png){fig-align="center"}
+
+**We need to make sure that the cure is not worse than the disease**
+
+## Research Question {.smaller}
+
+\
+\
+\
+
+::: {style="font-size: 1.5em; text-align: center"}
+Can class imbalance corrections improve the performance of clinical prediction models, without compromising?
+:::
+
+## Methods {.smaller}
+
+::: incremental
+**Aim:**
+
+-   To determine the best practices for handling class imbalance when developing clinical prediction models for dichotomous risk prediction.
+
+
+**Data Generating Mechanism:**
+
+-   Data for each class generated independently via distinct multivariate normal distributions
+-   27 unique scenarios
+
+**Estimands:** 
+
+- Out-of-sample predictive performance of clinical prediction models.
+- Performance based on: brier score, auc, calibration intercept, slope and flexible calibration curves. 
+:::
+
+## Methods {.smaller}
+
+**Full-Factorial Design:** 5 imbalance corrections x 6 classification algorithms
+
+![](method.png){fig-align="center"}
+
+## Results {.smaller}
+
+::: panel-tabset
+### Plots
+
+![](results_plot.png)
+
+### Statistics{.smaller}
+
+there will an interactive table here
+
+```{r}
+require(DT)
+datatable(mtcars, options = list(pageLength = 5))
+```
+:::
+
+## Discussion{.smaller} 
+\
+\
+
+:::{style="font-size: 1.5em; text-align: center"}
+~ eventually there will be results that can be discussed here ~
+:::
+
+## Thank you, Next
+
+![](https://media.giphy.com/media/4QqKqLoVbbeWEVjVGv/giphy.gif){fig-align="center"}
+
+## Appendix A {.smaller}
+
+\
+
+Given: $AUC = \Phi \left( \sqrt{\pmb{\Delta_\mu}{'}\  (\pmb{\Sigma_0} + \pmb{\Sigma_1})^{-1} \ \pmb{\Delta_{\mu}}} \right)$\
+\
+Let $\pmb{A} = (\pmb{\Sigma_0} + \pmb{\Sigma_1})^{-1}$,
+
+\begin{align*}
+(\Phi^{-1}(AUC))^2 &= \pmb{\Delta_\mu{'}}  \pmb{A} \  \pmb{\Delta_{\mu}}\\
+(\Phi^{-1}(AUC))^2 &= 
+\begin{bmatrix}
+ \delta_\mu & \delta_\mu &   \dots &  \delta_\mu &  \delta_\mu
+\end{bmatrix} \begin{bmatrix} 
+    a_{11} & a_{12}  & \dots  & a_{1p}\\
+    \vdots &         & \ddots & \\
+    a_{p1} &  a_{p2} & \dots  & a_{pp} 
+\end{bmatrix}\begin{bmatrix}
+ \delta_\mu \\ \delta_\mu \\ \vdots \\ \delta_\mu \\ \delta_\mu
+\end{bmatrix}\\
+(\Phi^{-1}(AUC))^2 &= \delta_{\mu}^2 \sum_{j = 1}^{p} \sum_{i = 1}^{p} a_{ij}
+\end{align*}\
+\
+\
+Based on a desired $AUC$ of $0.85$,
+
+\begin{equation}
+\delta_\mu = \frac{\Phi^{-1}(0.85)}{\sqrt{\sum_{j = 1}^{p} \sum_{i = 1}^{p} a_{ij}}}.
+\end{equation}\
+\
+
+## Appendix B {.smaller}
+
+\
+Implement this equation in R:\
+\
+
+```{r, eval = F, echo = T}
+get_delta_mu <- function(npred, auc = 0.85){
+  # based equation 2 in Appendix A 
+  
+  inn = scenario(npred)      # get covariance matrices
+  s0  = inn[[7]]              
+  s1  = inn[[8]]                       
+  
+  A   = inv(s0 + s1)         # calculate matrix A
+  Y   = sum(colSums(A))                  
+  
+  dmu = qnorm(auc) / sqrt(Y)
+  return(dmu)
+}
+
+get_delta_mu(npred, auc = 0.8)
+```
+
+## References {.smaller}
