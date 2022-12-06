@@ -1,0 +1,88 @@
+---
+title: "Ex_7"
+author: "Florian van Leeuwen"
+date: "12/6/2022"
+output: 
+  ioslides_presentation:
+      logo: logo.png
+      mathjax: local
+      self_contained: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## What to include
+- a logo
+- a centered still figure
+- an interactive table
+- a moving figure, interactive figure or movie
+- a 2-column slide
+- an aligned multi-row equation
+- a citation and reference list
+- r-code, displayed but not executed
+- cached r-code (may overlap with the next requirement)
+- r-code, executed, but not displayed (e.g. a figure generation)
+
+## Slide centerd still figure
+
+<div class="centered">
+![](logo.png)
+</div>
+
+## Slide with interactive table
+
+
+```{r cars, echo = F, message=FALSE, warning = F}
+require(DT)
+datatable(mtcars, options = list(pageLength = 5))
+```
+
+## Slide with interactive figure
+```{r, echo = F, message=FALSE, warning = F}
+library(magrittr)
+library(highcharter)
+hchart(mtcars, "scatter", hcaes(wt, mpg, z = drat, color = hp)) %>%
+  hc_title(text = "Scatter chart with size and color")
+```
+
+## Slide r-code, executed, but not displayed
+
+```{r, echo = F, message=FALSE, warning = F}
+require(plotly)
+set.seed(123)
+
+df <- data.frame(x <- rchisq(1000, 5, 10),
+                 group <- sample(LETTERS[1:5], size = 1000, replace = T))
+
+p <- ggplot(df, aes(x, fill = group)) + 
+  geom_density(alpha = 0.5, position = "stack") + 
+  ggtitle("stacked density chart")
+
+ggplotly(p)
+```
+
+## Equations
+
+$$
+    Y_{ti} = \pi_{0i} + \pi_{1i}T_{ti} + \pi_{2i}X_{ti} + \pi_{3i}X_{ti}T_{ti} + \epsilon_{ti},
+$$
+
+$$
+\pi_{0i} = \beta_{00} + u_{0i}, \\
+\pi_{1i} = \beta_{10} + u_{1i}, \\
+\pi_{2i} = \beta_{20} + u_{2i}, \\
+\pi_{3i} = \beta_{30} + u_{3i}.
+$$
+
+
+## Two colums
+
+<div class="columns-2">
+  ![](logo.png)
+
+  - Bullet 1
+  - Bullet 2
+  - Bullet 3
+</div>
