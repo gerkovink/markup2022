@@ -1,0 +1,188 @@
+---
+title: "Are Response Rates and Response Bias Related?"
+author: Shannon Dickson
+format: 
+  revealjs: 
+    scrollable: true
+    #footer: Shannon Dickson (6369693)
+    theme: serif
+    slide-number: true
+    embed-resources: true
+    title-slide-attributes: 
+      data-background-image: "images/UU.png"
+      data-background-size: 30%
+      data-background-position: 50% 90%
+editor: visual
+---
+
+## Background {.smaller}
+
+::: r-stack
+::: {.fragment .fade-in-then-out}
+**Do you expect bias in survey estimates to increase as nonresponse rates increase?**
+:::
+
+::: {.fragment .fade-in-then-out fig-align="center" width="600"}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+data_clean <- readRDS('data_clean.RDS')
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+p1 <- data_clean %>% 
+      ggplot(aes(MN, AbsRelbias, colour = Groves)) +
+      geom_jitter(alpha = 0.3) +
+      geom_smooth(method = "lm", se = FALSE) +
+      scale_colour_manual(values = c("#74A089", "#DC863B"), name = "", labels = c("New studies", "Groves")) +
+      labs(x     = "Nonresponse Rate",
+           y     = "Absolute Relative Bias (%)") +
+           #title = "Figure 1. Relationship between nonresponse rates and absolute bias") +
+          # subtitle = "Weighted correlation: 0.235") +
+      theme_bw() +
+      theme(plot.title = element_text(element_blank()),
+            #plot.title = element_text(family = "Palatino", face = "bold", hjust = 0.5),
+            axis.title.x = element_text(family = "Palatino", face = "bold"),
+            axis.title.y = element_text(family = "Palatino", face = "bold"),
+            legend.text = element_text(family = "Palatino"),
+            legend.position = "bottom",
+            panel.background = element_rect(fill = 'transparent'), 
+            plot.background = element_rect(fill = 'transparent', color=NA),
+            legend.background = element_rect(fill='transparent'),
+            legend.box.background = element_rect(fill='transparent'))
+ggplotly(p1)
+```
+:::
+:::
+
+## Background {.smaller}
+
+::: r-stack
+::: {.fragment .fade-in-then-out}
+![](images/plot4.png){fig-align="center" width="800"}
+:::
+
+::: {.fragment .fade-in}
+**So why do we need to take another look?**
+:::
+:::
+
+## Groves and Peytcheva (2008)[^1] {.smaller}
+
+[^1]: Groves and Peytcheva (2008). [The Impact of Nonresponse Rates on Nonresponse Bias: A Meta-Analysis](https://doi.org/10.1093/poq/nfn011)
+
+::: columns
+::: {.column width="50%"}
+::: {.fragment .fade-in}
+::: incremental
+-   **Meta-analysis:** 59 studies and 959 estimates
+-   **Leverage-Saliency Theory:**
+    -   Few main effects
+    -   Statistical interactions
+
+::: fragment
+![](images/causemodels.png){fig-align="center"}
+:::
+:::
+:::
+:::
+
+::: {.column width="50%"}
+::: {.fragment .fade-in}
+![](images/groves.png){fig-align="center"}
+:::
+:::
+:::
+
+## Current Study: Data {.smaller}
+
+::: {.fragment .fade-in-then-semi-out}
+![](images/overview2.png){fig-align="center"}
+:::
+
+## Current Study: Method {.smaller}
+
+::: incremental
+**Research Questions:**
+
+1.  Can we use network modelling to explore how survey characteristics are related?
+    -   Mixed Graphical Modelling?[^2]
+    -   Ising Model?[^3]
+2.  How are these characteristics connected to nonresponse rates *and* bias?
+    -   Between-study effects?
+    -   Within-study effects?
+    -   Cross-level interactions?
+:::
+
+[^2]: Haslbeck and Waldorp (2015). [Structure estimation for mixed graphical models in high-dimensional data](https://arxiv.org/pdf/1510.05677.pdf)
+
+[^3]: Borkulo et al. (2014). [A new method for constructing networks from binary data](10.1038/srep05918)
+
+## Network Example {.smaller}
+
+::: {.fragment .fade-in}
+![](images/qgraph.png){fig-align="center"}
+:::
+
+## Appendix 1: Code Example {.smaller}
+
+The following code generates Figure 3 in the previous slide.
+
+```{r, echo = TRUE, eval = FALSE}
+# Create a matrix to represent the DAG structure:
+dag <-  matrix(c(0, 1,  1, 0,  0, 0, 0,  0,  1, 1,
+                  0, 0,  0, 1, .5, 0, 0, .5,  1, 1,
+                  1, 1,  0, 0,  0, 0, 0,  0,  1, 1,
+                  0, 0,  0, 0, .5, 0, 0, .5,  1, 1,
+                  0, 1,  1, 0,  0, 0, 0,  0,  1, 1, 
+                  0, 0,  0, 0,  0, 0, 0, .5, .5, 1,
+                  0, 0,  0, 0,  0, 0, 0,  0,  0, 2,
+                  0, 0, .5, 0,  0, 0, 0,  0,  1, 1, 
+                  0, 0,  0, 0,  0, 0, 0,  0,  0, 2,
+                  0, 0,  0, 0,  0, 0, 0,  0,  0, 0), 10, 10, byrow = TRUE)
+
+# Create labels for adding to the network plot:
+Labels = c("Topic", "Saliency", "Relevance", "Mode", "Incentive", "Source", "Statistic", "Question Type", "NR", "Bias")
+
+# Create the network structure using the qgraph package:
+qgraph(dag,
+       groups = list("Between-Study Characteristics" = 1:6,
+                     "Within-Study Characteristics" = 7:8,
+                     "Outcomes" = 9:10),
+       nodeNames = Labels,
+       color = c("#DC863B", "#74A089", "#FAEFD1"),
+       directed = FALSE,
+       legend.cex = 0.5,
+       layout = "spring",
+       palette = "pastel",
+       theme = "TeamFortress",
+       bg = "transparent")
+
+```
+
+## Appendix 2: Included Studies
+
+```{r, echo = FALSE}
+library(DT)
+library(kableExtra)
+t1<- data_clean %>% 
+     group_by(Author) %>% 
+     filter(!is.na(Author)) %>% 
+     summarise("Mean Sample Size" = round(mean(SSize, na.rm = T), 2),
+               "Absolute Relative Bias" = round(mean(AbsRelbias, na.rm = T), 2),
+               "Response Rate" = round(mean(RR, na.rm = TRUE), 2)) %>% 
+  as.data.frame()
+
+datatable(t1, filter = 'bottom', options = list(pageLength = 5))
+```
+
+## 
+
+::: r-stack
+::: {.fragment .fade-in-then-out}
+**Thanks for listening!**
+:::
+
+::: {.fragment .fade-in-then-out}
+![](images/question.png){fig-align="center"}
+:::
+:::
