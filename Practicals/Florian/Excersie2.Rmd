@@ -1,0 +1,110 @@
+---
+title: "Exercise"
+author: "Florian van Leeuwen"
+date: "9/30/2022"
+output: pdf_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+# How long can a player lose in roullete by only betting on even or uneven?
+```{r}
+
+Roulette <- function(N_spins, cutoff_plot, seed){
+  set.seed(seed)
+  result <- c()
+  
+  for (i in 1:N_spins){
+     number <- sample(seq(0,36,1), 1)
+    if ((number %% 2) == 0){
+      if (number == 0) {
+        result[i] = "Zero"
+          }
+      else{
+        result[i] = "Even"
+      }
+    }
+    else{
+      result[i] = "Un Even"
+    }
+  }
+  
+  X <- rle(result)
+  X2 <- data_frame(
+    N <- X$lengths,
+    V <- X$values
+  ) 
+  colnames(X2) <- c("N", "V")
+  
+  P1 <- ggplot(X2, aes(x = N, fill = V)) +
+    geom_histogram(binwidth = 1, alpha = 0.7) +
+    scale_fill_manual(values=c("red", "black", "green")) +
+    scale_x_continuous(breaks= seq(1, max(X2$N), 1)) +
+    labs(title = paste("Number of times the ball falls in the same category in ",N_spins, "tries"), x = "Number of sequence", y = "Count", fill = "Where the ball lands") +
+    theme_classic() 
+
+  P2 <- ggplot(X2, aes(x = N, fill = V)) +
+    geom_histogram(binwidth = 1, alpha = 0.7) +
+    scale_fill_manual(values=c("red", "black", "green")) +
+    scale_x_continuous(breaks= seq(1, max(X2$N), 1),
+                                  limits = c(cutoff_plot, max(X2$N))) +
+    labs(title = paste("Number of times the ball falls in the same category in ",N_spins, "tries"), x = "Number of sequence", y = "Count", fill = "Where the ball lands") +
+    theme_classic() 
+  
+  return(list(P1, P2))
+}
+
+Roulette(100000000, 15, 100)
+```
+
+
+
+
+ 
+# OLD PROJECT
+
+# How many of the sample number of dice can we throw in 3 tries?
+```{r}
+dice <- seq(1,6,1)
+N_dice <- 5
+N <- 100
+
+
+Yazhee <- function(dice, N_dice,N, seed){
+  set.seed(seed)
+  result <- c()
+      Trow_1 <- sample(dice, N_dice, replace = TRUE)
+      Trow_1_count <- as.data.frame(table(Trow_1))
+      Trow_2 <- c(sample(dice, (N_dice-Trow_1_count$Freq[1]), replace = TRUE),rep(as.numeric(as.character(Trow_1_count$Trow_1[1])),Trow_1_count$Freq[1]))
+      Trow_2_count <- as.data.frame(table(Trow_2))
+      Trow_3 <-c(sample(dice, (N_dice-Trow_2_count$Freq[1]), replace = TRUE),rep(as.numeric(as.character(Trow_2_count$Trow_1))[1],Trow_2_count$Freq[1]))
+      #Trow_3_count <- as.data.frame(table(Trow_3))
+      #result[i] <- Trow_3_count$Freq[1]
+  return(list(T1 = Trow_1, T1c = Trow_1_count, T2 = Trow_2, T2c = Trow_2_count, T3 = Trow_3))
+}
+
+
+Yazhee(dice, N_dice,N, 124)
+```
+
+```{r}
+Yazhee2 <- function(dice, N_dice,N, seed){
+  set.seed(seed) # set seed
+  
+  # empty var
+  trow <- matrix(nrow = N, ncol = N_dice)
+  
+  for (i in 1:N){
+    trow[i,] <- sample(dice, N_dice, replace = TRUE)
+  }
+
+  return(table(trow[i,]))
+}
+
+X <- Yazhee2(dice, N_dice,N, 126)
+
+sort(as.data.frame(X), decreasing = T)
+```
+

@@ -1,0 +1,5 @@
+\beamer@sectionintoc {1}{Working with equations}{3}{0}{1}
+\beamer@sectionintoc {2}{Aligning the same equations}{4}{0}{2}
+\beamer@sectionintoc {3}{Omit equation numbering}{5}{0}{3}
+\beamer@sectionintoc {4}{Ugly alignment}{6}{0}{4}
+\beamer@sectionintoc {5}{Discussion}{7}{0}{5}
