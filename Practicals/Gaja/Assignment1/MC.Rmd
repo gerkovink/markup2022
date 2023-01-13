@@ -1,0 +1,41 @@
+---
+title: "Assigment 1 part 2"
+author: "Gaja Nenadović"
+output: html_document
+---
+
+```{r}
+require(ggplot2)
+if (!require(pander)) install.packages("pander")
+```
+
+```{r}
+set.seed(1)
+N <- 10000
+nrep <- 100
+z <- qt(0.975, N-1)
+dat <- replicate(nrep, rnorm(N, 0, 1))
+ss <- apply(dat, 2, function(x) c(M=mean(x),
+                                  bias=abs(mean(x)), 
+                                  SE=1/sqrt(N),
+                                  lwbd=mean(x)-z/sqrt(N),
+                                  uppbd=mean(x)+z/sqrt(N)))
+ss <- data.frame(t(ss))
+ss$contains <- (ss$lwbd <= 0) & (0 <= ss$uppbd)
+colMeans(ss)
+```
+
+```{r plot}
+# plot
+ggplot(ss, aes(x=1:100, y=M, color = contains)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymin=lwbd, ymax=uppbd)) +
+  xlab("Repetition") +
+  ylab("M & 95% CI") + 
+  geom_hline(yintercept = 0)
+```
+
+```{r table}
+# table
+pander(ss[!ss$contains,1:5], caption="Samples whose 95% CI does not contain the population mean.")
+```
