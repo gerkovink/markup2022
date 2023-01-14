@@ -1,0 +1,75 @@
+---
+title: "Exercise 5"
+author: "Hsuan Lee"
+output: 
+  ioslides_presentation:
+    logo: https://upload.wikimedia.org/wikipedia/en/thumb/2/26/Utrecht_University_logo.svg/1024px-Utrecht_University_logo.svg.png
+    smaller : T
+bibliography: My_Library.bib
+---
+```{r setup, include=FALSE}
+library(DT)
+library(plotly)
+```
+
+## A Centered Still Figure
+
+Lisbon
+<center>
+<img src="Figures/Lisbon.jpg" alt="HTML5 Icon" width = 40%>
+</center>
+
+## An Interactive Table
+
+```{r}
+datatable(mtcars, options = list(pageLength = 5))
+```
+
+## A moving figure, Interactive Figure or Movie
+
+- cached, executed, but not displayed r-code
+
+```{r cache=TRUE, echo=FALSE}
+set.seed(123)
+
+df <- data.frame(x <- rchisq(1000, 5, 10),
+                 group <- sample(LETTERS[1:5], size = 1000, replace = T))
+
+p <- ggplot(df, aes(x, fill = group)) + 
+  geom_density(alpha = 0.5, position = "stack") + 
+  ggtitle("stacked density chart")
+
+ggplotly(p)
+```
+
+## A 2-Column Slide
+
+<div class="columns-2">
+
+- Breakfast
+- Lunch
+- Dinner
+
+- Working
+- Sleeping
+- Entertainment
+
+</div>
+
+## An Aligned Multi-Row Equation
+
+\[\begin{align}
+  \log \lambda(s,r,t) = \sum_{p} \beta_p x_p(s,r,t) \\
+  BF = \dfrac{\int_{\beta \in H_{static}} \mathcal{N}(\beta|\hat{\beta}, \hat{\sum}_{\beta}) d\beta}
+	{\int_{\beta \in H_{static}} \mathcal{N}(\beta|\beta_P, \hat{\sum} ^p _{\beta}) d\beta}
+\end{align}\]
+
+## R-code, Displayed But Not Executed
+
+```{r eval=FALSE}
+a <- 3
+b <- 2
+a + b
+```
+
+## Refference
