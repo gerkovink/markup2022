@@ -14,6 +14,8 @@ library(future)
 library(furrr)
 library(dplyr)
 library(magrittr)
+library(DT)
+library(ggplot2)
 ```
 ```{r}
 nsim = 100
@@ -47,14 +49,12 @@ SIM %>% filter(!cov)
 ```
 
 ```{r}
-library(DT)
 SIM %>% 
   round(4) %>% 
   datatable()
 ```
 
 ```{r}
-library(ggplot2)
 limits <- aes(ymax = SIM$upper, ymin = SIM$lower)
 SIM %>% mutate(covered = as.factor(cov)) %>% 
 ggplot(aes(y=mean, x=1:100, colour = covered)) + 
@@ -64,6 +64,9 @@ ggplot(aes(y=mean, x=1:100, colour = covered)) +
   ylab("Means and 95% Confidence Intervals")
 ```
 
+```{r}
+sessionInfo()
+```
 
 
 
