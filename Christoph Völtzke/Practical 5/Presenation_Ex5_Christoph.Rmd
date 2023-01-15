@@ -1,0 +1,115 @@
+---
+title: "Spectator Attendance: Impact COVID 19"
+author: "Christoph Völtzke"
+date: "2022-11-26"
+output: 
+  ioslides_presentation:
+    logo: spectator_logo_pexels.jpg
+bibliography: dshs.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(DiagrammeR)
+library(DT)
+library(readr)
+library(plotly)
+library(lme4)
+```
+
+```{r, include=FALSE}
+dat <- read_csv("D1 (1).csv")
+plot_data <- read_csv("plot_data.csv")
+dat_new <- read_csv("dat_new.csv")
+```
+## Expected effect
+
+<center>
+```{r, echo=FALSE}
+grViz("
+  digraph {
+    Home_advantage -> {Spectators Home_Team_Points} 
+    Spectators -> {Home_Team_Points}
+  }")
+```
+</center>
+
+- Now we want to investigate whether the absence of Spectators while the COVID 19 pandemic leads to a decrease in Home team points.
+
+## Replication & Extension
+<div class="columns-2">
+
+- @wunderlich2021does to be replicated:
+  - 10 different leagues spanning 6 countries
+  - All seasons from 2010/2011 to 2019/2020 
+  - Outcome variables differences in points, goals, shots
+  
+- 
+  - Original gets extended with:
+  - Recent 2020/2021 and 2021/2022 seasons 
+  - Modeling decisions 
+  - Exploratory analysis based on: @jimenez2021home & @scoppa2021social
+</div>
+## Data presentation
+
+```{r, echo=FALSE}
+datatable(dat, options = list(pageLength = 5))
+```
+
+- Here is an examplary data set retrieved from:
+<center>
+[http://www.football-data.co.uk](http://www.football-data.co.uk)
+</center>
+
+## How points changed over time
+
+```{r, include=FALSE}
+# oterwhise the plot collapses
+plot_data$Name <- as.character(plot_data$Name)
+plot_data[plot_data == "10_Y"] <- "10"
+plot_data[plot_data == "10_N"] <- "10.5"
+plot_data$Name <- as.numeric(plot_data$Name)
+```
+
+```{r, echo=FALSE, warning=FALSE}
+p2 <- ggplot(data = plot_data, aes(x=Name, y=Points, group=1)) +
+  geom_line(color="black") +
+  geom_point(size=2, color="blue") + 
+  ylab("Points") + xlab("Season") +
+  geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  theme_minimal()
+
+ggplotly(p2)
+```
+## Model used for analysis
+
+\[\begin{align}
+  Points_{ijk} = \gamma_{000} + (\gamma_{100}+ u_{10k} + u_{1jk}) * Covid19_{ijk} \\
+    + (\gamma_{200}+ \upsilon_{20k} + u_{2jk}) * Season_{ijk} \\
+    + \epsilon_{ijk} + \upsilon_{0jk} + u_{00k}
+\end{align}\]
+
+- This is the multi level equation including three levels. The main variable of interest is Covid-19
+- If this is significant with a negative coefficent there is a significant decrease in points for the home team
+
+## Code for analysis
+
+```{r, eval=FALSE}
+model <- lmer(pointsDiff ~ Covid19 + Season_c + (1|Division/Home),
+              REML = FALSE, data = dat_new)
+```
+- This is the multi level model using the lme4 package.
+
+## Results of analysis
+
+```{r, warning=FALSE, echo=FALSE}
+model <- lmer(pointsDiff ~ Covid19 + Season_c + (1|Division/Home),
+              REML = FALSE, data = dat_new)
+summary(model)
+```
+
+
+## References
