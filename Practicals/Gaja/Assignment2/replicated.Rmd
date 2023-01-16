@@ -1,0 +1,162 @@
+---
+title: "Assignment 2"
+author: "Gaja"
+date: ""
+output:
+ pdf_document:
+    includes:
+      in_header: "header.tex"
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+if (!require(performance)) install.packages("performance")
+```
+
+## Function definition
+
+Define a function which generates a binary variable with a probit
+regression model for a given number of predictor variables
+$X \sim \mathcal{N}(0,1), \, R^2$ and *probability of having a value 1*,
+$\pi_i$.
+
+```{r funcdef}
+
+genBin <- function(N, nvar, perc, R2){
+  
+  beta <- runif(nvar, 10, 20)
+  X <- replicate(nvar, rnorm(N, 0, 1))
+  
+  s <- beta %*% cov(X) %*% beta
+  resSigma <- (s / R2) - s
+  sdLP <- sqrt(s+resSigma)[1]
+  
+  mult <- qnorm(1-perc)
+  
+  LP <- X %*% beta
+  M <- mean(LP)
+  R <- LP + rnorm(N, 0, sqrt(resSigma))
+  
+  return(list(out=ifelse(R > M+mult*sdLP, 1, 0), X=data.frame(X)))
+  
+}
+
+```
+
+## Run
+
+Run the code multiple times to obtain the same results by setting the
+same seed each time before running the function.
+
+```{r parms, echo=FALSE}
+seed <- 1813544
+N <- 1000
+nv <- 5
+R2 <- 0.1
+p <- 0.5
+```
+
+The function will be called two times, each time with the `r seed` seed
+for `r N` observations, `r nv` predictor variables, $R^2=`r R2`$
+explained variance in the underlying latent variable and $\pi_i=`r p`$.
+
+```{r replicate}
+res <- lapply(1:2, function(x) {set.seed(1813544)
+                                genBin(N=N, nvar=nv, R2=R2, perc=p)$out})
+```
+
+The percentage of observations with the same values in two calls is
+`r 100 * sum(res[[1]] == res[[2]]) / length(res[[1]])`%.
+
+### Replicate many times with different parameters
+
+```{r study.setup, echo=F}
+percent <- c(0.1, 0.5)
+R2int <- c(0.1, 0.5)
+conds <- expand.grid(list(p=percent, R2=R2int))
+nrep <- 100
+```
+
+Replicate the function `r nrep` times by varying $R^2 \in [`r R2int`]$
+and $\pi_i \in [`r percent`]$ and setting the seed to `r seed`.
+
+```{r fetchres, echo=FALSE}
+getRes <- function(obj, name1, name2) {
+  m <- glm(factor(obj[[name1]])~., data=obj[[name2]], family=binomial)
+  return(c(performance::r2_mckelvey(m), mean(obj[[name1]])))
+}
+```
+
+```{r results}
+set.seed(seed)
+res <- lapply(1:nrow(conds), 
+              function(x) rowMeans(replicate(nrep, 
+                                             getRes(genBin(N, 
+                                                           nv, 
+                                                           conds[x,"p"], 
+                                                           conds[x,"R2"]),
+                                                    "out", 
+                                                    "X")
+                                             )
+                                   )
+              )
+```
+
+### Results
+
+The tables below show mean pseudo $R^2$ as estimated by McKelvey and
+Zavoina's estimator and mean percentage of 1s over `r nrep`
+replications.
+
+| Mean percentage |    Mean $R^2$   |  Pop. values  |
+|-----------------|-----------------|---------------|
+| `r res[[1]][2]` | `r res[[1]][1]` | `r conds[1,]` |
+| `r res[[2]][2]` | `r res[[2]][1]` | `r conds[2,]` |
+| `r res[[3]][2]` | `r res[[3]][1]` | `r conds[3,]` |
+| `r res[[4]][2]` | `r res[[4]][1]` | `r conds[4,]` |
+
+Or with latex:
+
+\begin{table}[h]
+\begin{center}
+\caption{Varied factors.}\label{tab1}%
+\begin{tabular}{@{}lll@{}}
+\toprule
+Mean percentage & Mean $R^2$ & Pop. values \\
+\midrule
+`r res[[1]][2]`   & `r res[[1]][1]` & `r conds[1,]` \\
+`r res[[2]][2]`   & 1`r res[[2]][1]` &  `r conds[2,]` \\
+bka bla &  bla bla   & bla bla \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+
+As we see, $R^2_{MZ}$ is slightly deviates on average from the population 
+parameter.
+
+## Session info
+
+```{r}
+sessionInfo()
+```
+
+## The end
+
+A picture of a cute ferret to say goodbye, taken from
+\MYhref{https://www.boredpanda.com/cute-funny-ferrets/}{this} page.
+
+```{=tex}
+\begin{figure}
+  \begin{center}
+    \caption{A baby ferret.}\label{fig:ferret}
+    \includegraphics[width=0.33\textwidth, height=10cm]{ferret.jpg}
+  \end{center}
+\end{figure}
+```
+
