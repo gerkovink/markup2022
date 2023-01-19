@@ -39,9 +39,6 @@ library(sf)
 # r-code, executed, but not displayed (e.g. a figure generation)
 ```
 
-```{r, echo=FALSE}
-logo <- "/Users/maaikewalraad/Documents/UU.png"
-```
 
 ## Immigration in Europe | A visualization report
 
