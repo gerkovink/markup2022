@@ -1,0 +1,194 @@
+---
+title: "Migration in Europe" 
+subtitle: "A visualization report"
+author: "Maaike Walraad"
+output: ioslides_presentation
+widescreen: true
+---
+
+<style>
+.forceBreak { -webkit-column-break-after: always; break-after: column; }
+</style>
+
+
+```{r, include = F, message = F}
+#library(plotly)
+require(ggplot2)
+require(magrittr)
+require(dplyr)
+require(DT)
+require(plotly)
+require(readr)
+require(RColorBrewer)
+library(eurostat)
+library(tmap)
+library(rjson)
+library(RJSONIO)
+library(sf)
+
+
+# Requirements:
+# a logo
+# a centered still figure
+# an interactive table
+# a moving figure, interactive figure or movie
+# a 2-column slide 
+# an aligned multi-row equation
+# a citation and reference list
+# r-code, displayed but not executed
+# cached r-code (may overlap with the next requirement)
+# r-code, executed, but not displayed (e.g. a figure generation)
+```
+
+```{r, echo=FALSE}
+logo <- "/Users/maaikewalraad/Documents/UU.png"
+```
+
+## Immigration in Europe | A visualization report
+
+For this presentation, immigration data from [Eurostat](https://ec.europa.eu/eurostat/data/database) using the `eurostat` package. [Grid data](https://github.com/eurostat/Nuts2json) and [country codes](https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes/blob/master/all/all.csv) are obtained from Github and analyzed with the use of the `sf` and `tmap` packages. 
+
+
+
+## Estimation
+
+Population growth formula is given by [1]
+$$P = P_{0} x e^{rt}, $$
+
+where \
+  $P$ = Total population after time "t" \
+  $P_{0}$ = Starting population \
+  $r$ = \% Rate of growth \
+  $T$ = Time in hours or years \
+  $e$ = Euhler's number (2.71828...) \
+  
+
+## Europe and immigration [2]
+
+```{r, message = F, warning = F, echo = F}
+europe <- read_sf("https://raw.githubusercontent.com/eurostat/Nuts2json/master/pub/v2/2021/3035/20M/0.json") 
+
+imgr <- get_eurostat("migr_imm8") # obtain data
+imgr %<>% filter(age == "TOTAL", sex == "T", agedef == "COMPLET")
+imgr_20 <- imgr[imgr$time == "2020-01-01", ]
+eu <- merge(imgr_20, europe, by.x = "geo", by.y = "id", all.x = T)
+eu <- st_as_sf(eu)
+```
+
+
+```{r, message = F, warning = F, fig.show = "hide"}
+tm_shape(eu) +
+  tm_fill("values",
+          title = "Total immigration (2020)",
+          palette = "PuRd") +
+  tm_layout("Immigration",
+          legend.title.size = 1,
+          legend.text.size = 0.6,
+          legend.position = c("left","top"),
+          legend.bg.color = "white",
+          legend.bg.alpha = 1) 
+```
+
+## Europe and immigration
+
+```{r, message = F, warning = F, echo = F, fig.align = "center"}
+tm_shape(eu) +
+  tm_fill("values",
+          title = "Total immigration (2020)",
+          palette = "PuRd") +
+  tm_layout("Immigration",
+          legend.title.size = 1,
+          legend.text.size = 0.6,
+          legend.position = c("left","top"),
+          legend.bg.color = "white",
+          legend.bg.alpha = 1) 
+```
+
+
+## Immigration in Western Europe | A brief history
+
+```{r, message = F, warning = F, echo = F}
+cc <- read_csv(url("https://raw.githubusercontent.com/datasets/country-codes/master/data/country-codes.csv"))
+
+cc %<>% select("ISO3166-1-Alpha-2", "Sub-region Name", "official_name_en")
+
+# Some data adjustments 
+cc$official_name_en[cc$`ISO3166-1-Alpha-2` == "GB"] <- "Great Brittain"
+cc$official_name_en[cc$`ISO3166-1-Alpha-2` == "MK"] <- "North Macedonia"
+imgr$geo[imgr$geo == "UK"] <- "GB"
+imgr$geo[imgr$geo == "EL"] <- "GR"
+cc$`Sub-region Name`[cc$`ISO3166-1-Alpha-2` == "CY"] <- "Southern Europe"
+imgr_reg <- merge(imgr, cc, by.x = "geo", by.y = "ISO3166-1-Alpha-2", all.x = T)
+```
+
+```{r, message = F, warning = F, echo = F}
+regions <- unique(imgr_reg$`Sub-region Name`)
+
+# Western Europe
+gg_west <- ggplot(data = filter(imgr_reg, `Sub-region Name` == regions[1]), aes(x = time, y = values , col = official_name_en)) +
+      geom_line() +
+      ylab("Immigration count") +
+      labs(col = "Country") +
+      scale_color_manual(values = brewer.pal(n = length(unique(imgr_reg$geo[imgr_reg$`Sub-region Name` == regions[1]])), "Set1"))
+
+ggplotly(gg_west) 
+```
+
+
+## Slide Title {.columns-2 .smaller}
+
+>- So far we've seen the absolute immigration numbers
+
+>- It may be more useful to look at the immigration per capita
+
+
+
+>- **See the plot on the right for this**
+
+<p class="forceBreak"></p>
+
+```{r, warning = F, message = F, echo = FALSE, out.width = "600"}
+pop_tot <- get_eurostat("demo_gind") # obtain population totals 
+pop_tot %<>% filter(time == "2020-01-01") 
+n <- pop_tot %>%
+  group_by("geo") %>%
+  filter(indic_de == "JAN") # on january 1st 2019
+names(n)[names(n) == "values"] <- "pop_size" # rename 'values'
+
+eu_n <- merge(eu, n, by = "geo", all.x = T) # Re-use eu data created in 5c
+eu_n$im_cap <- eu_n$values / eu_n$pop_size * 100
+eu_n <- st_as_sf(eu_n)
+
+cols <- brewer.pal(n = 9, name = "GnBu")[c(4,6,8)] 
+
+tm_shape(eu_n) +
+  tm_fill("im_cap",
+          title = "Immigration per capita in % (2020)",
+          palette = cols) +
+  tm_layout("Immigration",
+          legend.title.size = 1,
+          legend.text.size = 0.6,
+          legend.position = c("left","top"),
+          legend.bg.color = "white",
+          legend.bg.alpha = 1)
+```
+
+## An interactive table
+
+```{r, message = F, warning = F, echo = F}
+imgr_tab <- imgr_reg %>% filter(time == "2020-01-01", `Sub-region Name` == regions[1])
+imgr_tab %<>% select(official_name_en, time, values)
+datatable(imgr_tab, options = list(pageLength = 5), caption = "This is the immigration in Western Europe on January 1st 2020.")
+```
+
+## References
+
+[1] *Background* - *NUTS* - *Nomenclature of territorial units for statistics* - *Eurostat*. [Online; accessed 19. Jan. 2023]. 2023. url: https://ec.europa.
+eu/eurostat/web/nuts/background. \
+[2] *How do you calculate population growth? + Example.* [Online; accessed
+19. Jan. 2023]. 2023. url: https://socratic.org/questions/how-do-
+you-calculate-population-growth.
+4
+
+
+
