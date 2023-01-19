@@ -12,7 +12,6 @@ widescreen: true
 
 
 ```{r, include = F, message = F}
-#library(plotly)
 require(ggplot2)
 require(magrittr)
 require(dplyr)
