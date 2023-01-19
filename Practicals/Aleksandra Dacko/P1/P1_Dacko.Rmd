@@ -1,0 +1,65 @@
+---
+title: "P1_Dacko"
+author: "Aleksandra Dacko"
+date: "9/14/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=FALSE}
+library(future)
+library(tidyverse)
+library(furrr)
+library(DT)
+library(ggplot2)
+```
+## Exercises for the first practical
+
+### a), b) 
+
+```{r}
+
+plan(multisession,workers=3)
+
+NEW<-1:100 %>% future_map( function(x){
+  x <- rnorm(5000,mean=0,sd=1)
+  M <- mean(x)
+  AB<-M-0
+  DF <- length(x) - 1
+  SE <- 1 / sqrt(length(x))
+  QT<-(qt(.975, DF) * SE)
+  return(c(mean=M,
+         bias=AB,
+         std_err=SE,
+         lower=M-QT,
+         upper=M+QT,
+         cov = M - QT < 0 & 0 < M + QT))},.options = furrr_options(seed = 123),.progress = TRUE
+  ) %>% do.call("rbind", .) %>% as_tibble
+
+NEW
+```
+```{r}
+NEW%>% colMeans()
+```
+### c)
+
+```{r}
+limits <- aes(ymax = NEW$upper, ymin = NEW$lower)
+
+
+NEW %>% mutate(covered_by_95_CI = as.factor(cov)) %>% 
+ggplot(aes(y=mean, x=1:100, colour = covered_by_95_CI)) + 
+  geom_hline(aes(yintercept = 0), color = "black", size = 2) + 
+  geom_pointrange(limits) + 
+  xlab("Simulations") +
+  ylab("Means and 95% Confidence Intervals")+ggtitle("The Simulation study of the 95% confidence intervals")+scale_color_manual(labels = c("not covered (4/100)","covered (96/100)"), values = c("maroon","lightseagreen"))
+```
+
+### d)
+
+```{r}
+NEW %>% round(4) %>% filter((lower>0 & upper>0 )| (lower<0 & upper<0) ) %>%select(-cov) %>% DT::datatable()
+```
