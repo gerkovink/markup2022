@@ -1,9 +1,12 @@
 ---
-title: "Markdown Presentation"
+title: "A very random presentation"
 author: "Lela Roos (1729683)"
 date: "11/27/2022"
-output: ioslides_presentation
+output: 
+  ioslides_presentation:
+    css: styles.css
 logo: UU_logo.png
+bibliography: bibliography.bib  
 ---
 ```{r setup, include=FALSE} 
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
@@ -24,6 +27,7 @@ x1 <- rnorm(n= 1000, 0, 1)
 x2 <- rnorm(n=1000, 3, 4)
 
 data <- as.data.frame(cbind(x1, x2))
+head(data)
 ```
 
 ## Multivariate normal
@@ -53,7 +57,7 @@ datatable(data, options = list(pageLength = 5))
 
 ## A not so still figure
 
-```{r, ECHO = FALSE}
+```{r, echo=FALSE, cache=TRUE}
 require(plotly)
 
 p <- ggplot(data, aes(x = value, fill = variable)) + 
@@ -78,8 +82,8 @@ The distribution of $X_2$:
 <div style="clear: both;"></div>
 So two beautiful normal distributions.
 
-## Even more equations
-This doesn't relate to the normal density stuff, but we can take
+## Equation time
+This doesn't relate to the normal density stuff at all. But I need to put something here as well. So, just so you know, we can take
 the inverse of functions:
 
 $$
@@ -89,8 +93,11 @@ g_i(\mu_{ij}) &= \nu_{i} + \lambda_i \eta_j \\
 \end{align}
 $$
 
-These relate to the Generalized Linear Factor Analysis Framework, originally proposed by 
+These relate to the Generalized Linear Factor Analysis (GLFA) Framework. Moderated Nonlinear Factor Analysis can be seen as an extension of this GLFA [@bauer2009].
 
+## References
+
+<div id="refs"></div>
 
 
 
