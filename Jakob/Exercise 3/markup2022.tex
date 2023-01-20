@@ -1,0 +1,141 @@
+\documentclass[9pt]{beamer}
+\usetheme{Rochester}
+\usecolortheme{wolverine}
+
+\usepackage[nodisplayskipstretch]{setspace}
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+}
+
+% title page
+\setbeamerfont{title}{size=\large}
+\title{Example document to recreate with beamer in \LaTeX}
+\author{Jakob Nolte}
+\date{FALL 2022 \\
+Markup Languages and Reproducible Programming in Statistics}
+
+\begin{document}
+
+\frame{\titlepage}
+
+% table of contents
+\section*{Outline}
+{
+\setbeamerfont{frametitle}{size=\large}
+\setbeamertemplate{sections/subsections in toc}[default]
+\begin{frame}
+    \frametitle{Outline}
+    \hypersetup{linkcolor=black}
+    \tableofcontents %
+\end{frame}
+}
+
+% slide 1
+\section{Working with equations}
+{
+\setbeamerfont{frametitle}{size=\large}
+\setstretch{0.5}
+\begin{frame}
+\frametitle{Working with equations}
+
+We define a set of equations as \\
+\begin{equation}
+    a = b + c^2,
+\end{equation}
+\begin{equation}
+    a - c^2 = b,
+\end{equation}
+\begin{equation}
+    \text{left side} = \text{right side},
+\end{equation}
+\begin{equation}
+    \text{left side + something} \geq \text{right side},
+\end{equation}
+for all something $>$ 0.
+
+\end{frame}
+}
+
+% slide 2
+\subsection{Aligning the same equations}
+{
+\setbeamerfont{frametitle}{size=\large}
+\setstretch{0.5}
+\begin{frame}
+\frametitle{Aligning the same equations}
+
+Aligning the equations by the equal sign gives a much better view into the placements of the separate equation components. \\
+\begin{align}
+    a &= b + c^2, \\
+    a - c^2 &= b, \\
+    \text{left side} &= \text{right side}, \\
+    \text{left side + something} &\geq \text{right side},
+\end{align}
+for all something $>$ 0.
+
+\end{frame}
+}
+
+% slide 3
+\subsection{Omit equation numbering}
+{
+\setbeamerfont{frametitle}{size=\large}
+\setstretch{0.5}
+\begin{frame}
+\frametitle{Omit equation numbering}
+
+Alternatively, the equation numbering can be omitted. \\
+\begin{align}
+    a &= b + c^2, \notag\\
+    a - c^2 &= b, \notag\\
+    \text{left side} &= \text{right side}, \notag\\
+    \text{left side + something} &\geq \text{right side}, \notag
+\end{align}
+for all something $>$ 0.
+
+\end{frame}
+}
+
+% slide 4
+\subsection{Ugly alignment}
+{
+\setbeamerfont{frametitle}{size=\large}
+\setstretch{0.5}
+\begin{frame}
+\frametitle{Ugly alignment}
+
+Some components do not look well, when aligned. Especially equations with different heights and spacing. For example, \\
+\begin{align}
+    E &= mc^2, \\
+    m &= \frac{E}{c^2}, \\
+    c &= \sqrt{\frac{E}{c^2}}.
+\end{align}
+Take that into account.
+
+\end{frame}
+}
+
+% discussion
+\section{Discussion}
+{
+\setbeamerfont{frametitle}{size=\large}
+\setstretch{0.5}
+\setbeamertemplate{itemize items}[triangle]
+\begin{frame}
+\frametitle{Discussion}
+
+This is where you’d normally give your audience a recap of your talk, where you could discuss e.g. the following:
+\begin{itemize}
+    \item Your main findings
+    \item The consequences of your main findings
+    \item Things to do
+    \item Any other business not currently investigated, but related to your talk
+\end{itemize}
+
+\end{frame}
+}
+
+\end{document}

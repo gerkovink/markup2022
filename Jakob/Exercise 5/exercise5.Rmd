@@ -1,0 +1,131 @@
+---
+title: "Has Hollywood Become more Sexist?"
+subtitle: "Investigating the Gender Bias in Movie Production Budgets"
+author: "Jakob Nolte"
+date: "January 10, 2023"
+output:
+  ioslides_presentation:
+    logo: UU_logo.png
+  widescreen: default
+  citation_package: natbib
+bibliography: exercise5.bib  
+---
+
+```{r attach required libraries, include=FALSE}
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r data preparation 1, include=FALSE}
+setwd("/Users/noltinho/Desktop/Jakob/Uni/Master/2. Semester/Bayesian Statistics/Assignment")
+movie.data <- read.csv("movies.csv", na.strings=c("","NA"))
+actor.data <- read.csv("oscar.csv", na.strings=c("","NA"))
+```
+
+```{r data preparation 2, include=FALSE}
+movie.data <- movie.data %>%
+  rename(title = name,
+         main_actor = star) %>%
+  na.exclude() %>%
+  mutate(budget_log = log(budget),
+         budget_log_mc = budget_log - mean(budget_log),
+         gross_log = log(gross),
+         year_1980 = (year - 1980)/10,
+         genre_action = ifelse(genre == "Action",1,0)) %>%
+  dplyr::select(title, genre, genre_action, year, year_1980, score, votes, main_actor, budget, budget_log, budget_log_mc, gross, gross_log)
+```
+
+```{r data preparation 3, include=FALSE}
+actor.data <- actor.data %>%
+  mutate(gender_main_chr = if_else(str_detect(actor.data$category, "ACTOR"),0,1)) %>%
+  rename(main_actor = name) %>%
+  dplyr::select(main_actor, gender_main_chr) %>%
+  distinct(main_actor, .keep_all = TRUE)
+```
+
+```{r data preparation 4, include=FALSE}
+data <- merge(movie.data, actor.data, by="main_actor")
+data <- data %>%
+  mutate(decade = case_when(
+    year >= 1980 & year < 1990 ~ 1,
+    year >= 1990 & year < 2000 ~ 2,
+    year >= 2000 & year < 2010 ~ 3,
+    year >= 2010 & year <= 2020 ~ 4)) %>%
+  group_by(decade) %>%
+  mutate(decade_prop = sum(gender_main_chr)/length(gender_main_chr))
+```
+
+## What the Research says {.smaller}
+
+- @erighaRaceGenderHollywood2015 finds that despite overall trends towards diversification, blockbuster movies have seen a decrease in female protagonists.
+
+- @lindnerMillionDollarMaybe2015 assess that the trend has worsened since the early 2000s.
+
+
+## Investigating the Trend over Time using the IMdB Database {.smaller}
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#install.packages("DT")
+library(DT)
+datatable(data[c(1:3,5,9)], options = list(pageLength = 5))
+```
+
+
+## Modeling the Trend over Time {.smaller}
+
+$$
+\begin{aligned}
+ln(Budget_i) &= \beta_0 + \beta_1Time + \beta_2Gender_i + e_i \\
+Budget_i &= e^{\beta_0 + \beta_1Time + \beta_2Gender_i + e_i}
+\end{aligned}
+$$
+
+## Modeling the Trend over Time using R {.smaller}
+
+```{r, message=FALSE}
+# the code fits a regression line per group
+reg <- lm(budget_log ~ year_1980 * gender_main_chr, data=data)
+```
+
+
+## Female Actors are indeed increasingly discriminated against {.smaller}
+
+```{r, echo=FALSE}
+summary(reg)
+```
+
+
+## Displaying the Trend visually {.smaller}
+
+```{r, message=FALSE, echo=FALSE, fig.cap="Figure 1: Increase in Movie Production Budgets over Time by Gender (interactive view)"}
+#install.packages("plotly")
+library(plotly)
+movie_plot <- ggplot(data, aes(x = year, y = budget_log, color = factor(gender_main_chr))) +
+  geom_point() +
+  geom_smooth(method = "lm", fill = NA) +
+  labs(x="Year of Release",
+       y="Production Budget (log)") +
+  scale_colour_discrete(name="Main Characters\nGender",
+                        breaks=c(0,1),
+                        labels=c("Male","Female"))
+ggplotly(movie_plot)
+```
+
+
+## Interpreting the Results
+
+<div class="columns-2">
+```{r, message=FALSE, echo=FALSE, fig.width=4, fig.height=3}
+movie_plot + theme(legend.position="bottom")
+```
+
+
+- The data supports previous research findings.
+- Over time, the gap in movie production budgets between genders has worsened.
+</div>
+
+
+## References
+
+

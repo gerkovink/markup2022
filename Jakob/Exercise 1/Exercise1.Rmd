@@ -1,0 +1,74 @@
+---
+title: "Exercise 1 - Reproducible Programming"
+author: "Jakob Nolte"
+date: "Sep 18, 2022"
+output: html_notebook
+---
+
+```{r}
+set.seed(123)
+```
+
+# 1. Perform a simulation that does the following:
+
+## a. Sample 100 samples from a standard normal distribution.
+
+```{r}
+library(plyr)
+samples <- rlply(100, rnorm(1000, 0, 1))
+```
+
+## b. For each of these samples, calculate the following statistics for the mean: 
+
+- absolute bias, 
+- standard error, 
+- lower bound of the 95% confidence interval, 
+- and upper bound of the 95% confidence interval
+
+```{r}
+sim.stats <- function(x){ 
+  mean <- mean(x)
+  se <- 1/sqrt(length(x))
+  df <- length(x) - 1
+  tscore <- qt(.975, df) * se
+  return(c(mean, mean - 0, se, mean - tscore, mean + tscore))
+}
+format <- c("Mean" = 0, "Bias" = 0, "Std.Err" = 0, "Lower" = 0, "Upper" = 0)
+```
+
+```{r}
+library(dplyr)
+results <- samples %>%
+  vapply(., sim.stats, format) %>%
+  t() %>%
+  as.data.frame() %>%
+  mutate(Included = Lower < 0 & 0 < Upper)
+```
+
+95 out of 100 samples include the true population value.
+
+```{r}
+colMeans(results)
+```
+
+## c. Create a plot that demonstrates the simulation results.
+
+```{r}
+library(ggplot2)
+limits <- aes(ymax = results$Upper, ymin = results$Lower)
+ggplot(results, aes(x=1:nrow(results), y=Mean, colour=Included)) +
+  geom_hline(aes(yintercept=0), color="black") +
+  geom_pointrange(limits) +
+  xlab("Simulated Samples") +
+  ylab("Means and 95% Confidence Intervals")
+```
+
+## d. Present a table containing all simulated samples for which the resulting confidence interval does not contain the population value.
+
+```{r}
+library(kableExtra)
+table <- results[!results$Included, ]
+kable(table[,1:5], "html") %>%
+  kable_styling(full_width = FALSE)
+```
+
