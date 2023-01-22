@@ -1,0 +1,108 @@
+---
+title: "Exercise 5" 
+author: "Lotte Mensink"
+date: "2023-01-21"
+output: 
+  ioslides_presentation:
+    logo: uu_logo.png
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+```
+
+## Thesis Presentation
+
+<div class="columns-2">
+In this Markdown presentation, I will present some results of the pilot simulation study that I did for my thesis. My thesis is about efficient audit sample selection. In the pilot simulation study, I compare two methods for efficient sample selection against each other: the sample size approach and the deviance approach. Here follows an overview of some preliminary results. 
+</div>
+
+## Results in a table 
+
+This table shows the number of iterations and the deviance before and after in the first 100 datasets. 
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+require(DT)
+load("processed_results.RData")
+results <- results_data[1:100, c(4,7, 8)]
+datatable(results, options = list(pageLength = 5))
+```
+
+## Results in a Figure
+
+```{r, cache = TRUE}
+# load the results of the original simulation study
+load("results_data_original.RData")
+
+# get the data in the right structure for plotting
+total_results <- rbind(results_data, results_data_original)
+total_results$study <- as.factor(c(rep("Sample Size Approach", 8000), rep("Deviance Approach", 8000)))
+total_results$condition <- as.factor(total_results$condition)
+levels(total_results$condition) <- c("WY1WX1YZ1", "WY2WX1YZ1", "WY1WX2YZ1",
+                    "WY2WX2YZ1","WY1WX1YZ2","WY2WX1YZ2","WY1WX2YZ2","WY2WX2YZ2")
+```
+
+```{r, echo = FALSE}
+ggplot(aes(x = condition, y = added_units, fill = study), data = total_results) +
+  geom_boxplot() +
+  theme_classic() + 
+  scale_fill_grey() +
+  xlab("Condition") +
+  ylab("Added Units") +
+  theme(legend.title = element_blank(), text = element_text(size = 18),
+        axis.text.x = element_text(angle = -30, hjust = 0))
+```
+
+
+## Results in an Interactive Figure
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(plotly)
+
+p <- ggplot(aes(x = condition, y = added_units, fill = study), data = total_results) +
+  geom_boxplot() +
+  theme_classic() + 
+  scale_fill_grey() +
+  xlab("Condition") +
+  ylab("Added Units") +
+  theme(legend.title = element_blank(), text = element_text(size = 18),
+        axis.text.x = element_text(angle = -30, hjust = 0))
+
+ggplotly(p)
+```
+
+
+
+
+## The Code to Create the Interactive Figure
+
+```{r, results= 'hide', echo = TRUE}
+library(plotly)
+
+p <- ggplot(aes(x = condition, y = added_units, fill = study), data = total_results) +
+  geom_boxplot() +
+  theme_classic() + 
+  scale_fill_grey() +
+  xlab("Condition") +
+  ylab("Added Units") +
+  theme(legend.title = element_blank(), text = element_text(size = 18),
+        axis.text.x = element_text(angle = -30, hjust = 0))
+
+ggplotly(p)
+```
+
+## The Problem in an Equation
+
+The minimization procedure can be written as follows: 
+$$min\{\sum_{i,j} \delta_{ij}^+ + \sum_{i,j} \delta_{ij}^-\}$$
+under constraints
+$$m_{ij1} = n_{ij1} + \delta_{ij}^+ - \delta_{ij}^-;$$
+$$m_{ij0} = n_{ij0} - \delta_{ij}^+ + \delta_{ij}^-;$$
+$$D \leq \chi_{I(J-1)}^2 (1-\alpha);$$
+$$0 \leq \delta_{ij}^+ \leq n_{ij0};$$
+$$0 \leq \delta_{ij}^- \leq n_{ij1}.$$
+
+## The End
+
+
