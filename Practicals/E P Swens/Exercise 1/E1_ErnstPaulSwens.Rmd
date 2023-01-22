@@ -1,0 +1,70 @@
+---
+title: "Exercise 1 Monte Carlo Simulation Exercise" 
+subtitle: "Markup Languages"
+author: "Ernst Paul Swens"
+date: "`r format(Sys.time(), '%B, %Y')`"
+output: 
+   html_document:
+      toc: true
+      number_sections: false
+      toc_float:
+         collapsed: true
+         smooth_scroll: true
+---
+
+## Part A
+
+```{r}
+library(tidyverse)
+
+# fix seed
+set.seed(1)
+
+# sample 100 samples from a standard normal distribution
+simulation <- replicate(rnorm(100), n = 100, simplify = F)
+```
+
+## Part B
+
+```{r}
+# for each of these samples, calculate the following statistics for the mean
+mean_statistics <- function(x) {
+   mu = mean(x)
+   # calculate 
+   bias = mu - 0
+   se = sd(x) / sqrt(length(x))
+   lower = mu - 1.96 * se
+   upper = mu + 1.96 * se
+   
+   data.frame(bias, se, lower, upper)
+}
+
+results <- simulation %>% 
+   map(~mean_statistics(.)) %>%
+   bind_rows() %>%
+   mutate(i = row_number())
+```
+
+## Part C
+
+```{r}
+# create a plot that demonstrates the following
+results %>% 
+   pivot_longer(c(lower, upper)) %>%
+   ggplot(aes(x = value)) + 
+   geom_histogram(bins = 30, fill = "white", color = "black") + 
+   facet_wrap(~name) + 
+   theme_bw()
+```
+
+## Part D
+
+```{r}
+# present a table containing all simulated samples for which the resulting
+# confidence interval does not contain the population value.
+results %>%
+   mutate(cover = ifelse(lower > 0 | upper < 0, 0, 1)) %>%
+   filter(!cover) %>%
+   select(-i, -cover) %>%
+   round(3)
+```

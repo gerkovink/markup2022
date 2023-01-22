@@ -1,0 +1,54 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+# load packages
+library(shiny)
+library(ggplot2)
+
+# define user interface
+ui <- fluidPage(
+  # select the independent and dependent variable
+  selectInput("x", "Independent variable:", names(mtcars)),
+  selectInput("y", "Dependent variable:", names(mtcars)),
+  
+  # display the scatter plot
+  plotOutput("scatterplot")
+)
+
+# now define the server function
+server <- function(input, output) {
+  
+  # generate the scatterplot
+  output$scatterplot <- renderPlot({
+    ggplot(mtcars, aes_string(x = input$x, y = input$y)) +
+      geom_point() + 
+      geom_smooth(method = "lm") + 
+      theme_bw()
+  })
+}
+
+# run shiny app 
+shinyApp(ui = ui, server = server)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
