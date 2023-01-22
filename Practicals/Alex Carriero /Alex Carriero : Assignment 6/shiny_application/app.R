@@ -69,12 +69,6 @@ wine_countries<-wines %>%
   summarise(n = n()) %>% 
   arrange(desc(n)) 
 
-# make colour palette 
-country_vec <-unique(wine_countries$country)
-qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
-col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
-names(col_vector) <- country_vec
-
 ############################################################################################
 ## define UI
 ui <- fluidPage(theme = shinytheme("yeti"),
@@ -136,7 +130,6 @@ server <- function(input, output, session) {
     ggplot(grape, aes(x = fct_reorder(province, count, max), y = count)) +
       geom_col(aes(fill = country), alpha = 0.8)+
       coord_flip() +
-      scale_fill_manual(name = "country", values = col_vector) +
       labs(x = "region", title = "Top 6 Regions:  Quantity") +
       theme_minimal()
   })
