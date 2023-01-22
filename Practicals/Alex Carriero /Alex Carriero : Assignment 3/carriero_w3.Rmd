@@ -1,0 +1,94 @@
+---
+title: "Example document to recreate with beamer in \\LaTeX"
+author: "Alex Carriero \\vspace{0.5in}"
+date:  |
+    | FALL 2022 
+    | Markup Languages and Reproducible Programming in Statistics
+fontsize: 9pt
+output:
+  beamer_presentation:
+     theme: "default"
+     colortheme: "beaver"
+     fonttheme: "professionalfonts"
+     keep_tex: TRUE
+     fontsize: "11pt"
+header-includes:
+  - \title{Welcome to \LaTeX{} Workshop}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Outline 
+
+Working with equations\
+\ \ \ \ Aligning the same equations\
+\ \ \ \ Omit equation numbering\
+\ \ \ \ Ugly alignment\
+\
+\
+\
+
+Discussion 
+
+## Working with equations
+
+We define as set of equations as: 
+
+\begin{gather}
+a = b + c^2,\\
+a- c^2 = b, \\
+\mathrm{left \ side} = \mathrm{right \ side}, \\
+\mathrm{left \ side} + \mathrm{something} \geq \mathrm{right \ side},
+\end{gather}
+
+for all something $> 0$. 
+
+## Aligning the same equations 
+
+Aligning the equations by the equal sign gives a much better view into the placements
+of the separate equation components.
+
+\begin{align}
+a &= b + c^2\\
+a- c^2 &= b \\
+\mathrm{left \ side} &= \mathrm{right \ side} \\
+\mathrm{left \ side} + \mathrm{something} &\geq \mathrm{right \ side}
+\end{align}
+
+
+## Omit equations numbering 
+
+Alternatively, the equation numbering can be omitted.
+
+\begin{align*}
+a &= b + c^2\\
+a- c^2 &= b \\
+\mathrm{left \ side} &= \mathrm{right \ side} \\
+\mathrm{left \ side} + \mathrm{something} &\geq \mathrm{right \ side}
+\end{align*}
+
+
+## Ugly alignment 
+
+Some components do not look well, when aligned. Especially equations with different
+heights and spacing. For example,
+
+\begin{align}
+E &= mc^2,\\
+m &= \frac{E}{c^2},\\
+c &= \sqrt{\frac{E}{m}}.
+\end{align}
+
+Take that into account.
+
+## Discussion
+
+This is where you’d normally give your audience a recap of your talk, where you could
+discuss e.g. the following
+
+- Your main findings
+- The consequences of your main findings
+- Things to do
+- Any other business not currently investigated, but related to your talk

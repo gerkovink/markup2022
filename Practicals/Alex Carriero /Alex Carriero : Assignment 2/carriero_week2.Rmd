@@ -1,0 +1,114 @@
+---
+title: "A reproducible workflow in rmarkdown. "
+author: "Alex Carriero"
+output: html_document
+---
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 12px;
+  }
+td {  /* Table  */
+  font-size: 12px;
+}
+h1.title {
+  font-size: 20px;
+  color: DarkBlue;
+}
+h1 { /* Header 1 */
+  font-size: 18px;
+}
+h2 { /* Header 2 */
+    font-size: 16px;
+}
+h3 { /* Header 3 */
+  font-size: 14px;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 12px;
+}
+</style>
+---
+## Aim 
+
+The aim of this simulation is to visualize the calibration curves resulting from various logistic models fit to data sets generated with the same data generating mechanism. 
+
+## Methods 
+
+Data sets (N = 100) will be generated under the same data generating mechanism. Logistic regression models will subsequently be fit.  Finally, all curves will be displayed in the same graph. 
+
+## Implementation
+
+```{r, message = F, warning = F}
+# Libraries
+library(tidyverse)
+library(ggthemes)
+```
+
+```{r}
+# fix the RNG seed
+set.seed(30)
+```
+
+```{r}
+# function to simulate data with binary outcome 
+
+generate_data <- function(){
+  n = 1000                     # n observations
+  X = replicate(4, rnorm(n))   # four continuous predictors
+  z = 0 + 0.1*X[,1] + 0.2*X[,2] + 0.3*X[,3] + 0.4*X[,4] # linear predictor
+  p = 1/(1+ exp(-z))
+  c = rbinom(n, 1, p)
+  df = as.data.frame(cbind(c, X))
+  return(df)
+}
+```
+
+```{r}
+# store simulated data sets in a list 
+
+dfs <- list()
+for (i in 1:100){
+  dfs[[i]]<- generate_data()
+}
+```
+
+```{r}
+# default plot 
+a <- ggplot() +
+      geom_abline(slope = 1, intercept = 0, col = "red") +
+      scale_x_continuous(breaks = seq(0, 1, 0.1)) +
+      scale_y_continuous(breaks = seq(0, 1, 0.1)) +
+      theme_solarized() +
+      xlab("Estimated Probability") +
+      ylab("Observed Proportion") +
+      ggtitle("Logistic Regression Calibration for 50 Simulated Data Sets") + 
+      theme(plot.title = element_text(face = "bold", colour = "black"))
+
+# plot one calibration curve for each simulated data set 
+for (i in 1:length(dfs)){
+  df = dfs[[i]]
+  lr <- glm(c~., family = "binomial", data = df)
+  tbl<- tibble(
+          class = df$c, 
+          prob = predict(lr, type = "response")
+        )
+  a <- a + geom_smooth(data = tbl, aes(x = prob, y = class), 
+                       method = stats::loess, se = FALSE, 
+                       col = "#463C5B", size = 0.3)
+}
+```
+
+## Results 
+```{r, echo = F, warning = F, message = F, fig.height = 6, fig.width =10}
+a # view the plot
+```
+
+## Session Info
+```{r}
+sessionInfo()
+```
+

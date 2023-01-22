@@ -1,0 +1,63 @@
+---
+title: "Monte Carlo Simulation"
+author: "Alex Carriero"
+date: "14/09/2022"
+output: pdf_document
+---
+
+## Monte Carlo Simulation Exercise 
+```{r}
+# generate 100 samples of size 100. 
+n = 100 
+set.seed(8119)
+samples <- matrix(0, nrow= 100, ncol=100)
+
+for(i in 1:100){
+  samples[,i] <- rnorm(n)
+}
+
+# create function to gather information about samples 
+info <- function(d){
+  n = length(d)
+  mean = mean(d)
+  se   = sd (d) / sqrt(n)
+  ci_l = mean - 1.96*se
+  ci_u = mean + 1.96*se
+  
+  output <- c(mean, se, ci_l, ci_u)
+  return(output)
+}
+
+# save information 
+x <- apply(samples, 2, info)
+absolute_bias <- x[1,]
+standard_err  <- x[2,]
+ci_l          <- x[3,]
+ci_u          <- x[4,]
+id            <- c(1:100)
+
+# store information in data frame 
+df <- as.data.frame(cbind(id, absolute_bias,standard_err, ci_l, ci_u))
+```
+
+```{r}
+# create indicator if ci contains true mean 
+df_i<- df %>% 
+        mutate(outside = as.factor(ifelse(ci_l > 0 | ci_u < 0, 1, 0)))
+
+# create a table with the simulations that do not contain the true mean 
+df_i %>% 
+    filter(outside ==1)
+```
+
+```{r}
+# Plot to Demonstrate CI Definition: 
+# “ A replication of the procedure that generates a 95% confidence interval that is centered 
+#  around the sample mean would cover the population value at least 95 out of 100 times ”
+
+library(ggplot2)
+ggplot(df_i, aes(x=id, y=absolute_bias)) + 
+  geom_point(size = 4, aes(color = outside))+ 
+  geom_errorbar(aes(ymax = ci_u, ymin=ci_l)) 
+```
+
