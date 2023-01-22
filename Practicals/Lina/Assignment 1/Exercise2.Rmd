@@ -1,0 +1,53 @@
+---
+title: "Exercise2"
+author: "Lina Kramer"
+date: "1/11/2023"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Monte Carlo simulation
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+set.seed(15)
+library(dplyr)
+library(tidyr)
+library(plotrix)
+
+data <- replicate (100, rnorm(200)) %>% as.data.frame()# 100 samples from a standard normal distribution n = 200
+
+data <- data %>% pivot_longer(cols=everything(), names_to = "set", values_to = "val")
+
+sumdata <- data %>%  # means, bias, standard errors, CIs
+  group_by(set) %>% 
+  summarise_each(funs(mean, 
+                      bias= 0-mean, 
+                      se=sd(.)/sqrt(n()), 
+                      lower = mean - qnorm(0.975)*sd(.)/sqrt(n()), 
+                      upper= mean + qnorm(0.975)*sd(.)/sqrt(n()))) 
+
+
+sumdata
+
+```
+```{r echo=TRUE, warning=FALSE}
+library(ggplot2)
+library(gghighlight)
+
+pd <- position_dodge(0.78)
+
+ggplot(sumdata, aes(x=mean, y = set)) +
+   #draws the means
+      geom_point(position = pd) +
+   #draws the CI error bars
+      geom_errorbar(data=sumdata, aes(xmin=mean-2*se, xmax=mean+2*se), width=.1, position = pd)+
+      geom_vline(xintercept = 0, color ="red")
+  
+```
+```{r echo=TRUE}
+sumdata %>% filter(lower>0 | upper <0)
+```
+
