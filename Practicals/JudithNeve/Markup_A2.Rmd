@@ -1,0 +1,91 @@
+---
+title: "Practical 2"
+author: "Judith Neve"
+date: '2022-10-06'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+## Aim
+
+In this study, I aim to empirically show the proportion of observations within 1, 2, and 3 standard deviations of the mean in a normal distribution. These proportions are expected to be approximately 68, 95, and 99, respectively.
+
+# Methods
+
+## Data-generating mechanism
+
+The `rnorm()` function is used to generate observations from a normal distribution. We generate three vectors with 1000 observations, each following a different distribution:
+* A standard normal distribution,
+* A normal distribution with mean 100 and standard deviation 50,
+* A normal distribution with mean 10 and standard deviation 1.
+
+```{r}
+set.seed(9) # the number of books on my bedside table
+
+StandardNormal <- rnorm(1000)
+Mean100SD50 <- rnorm(1000, 100, 50)
+Mean10SD1 <- rnorm(1000, 10, 1)
+```
+
+## Estimand
+
+The estimator is the proportion of observations within 1, 2, or 3 standard deviations of the mean for each vector. We will have 9 estimates. The function in the chunk below will be used.
+
+```{r}
+propwithinSD <- function(vector, mean = 0, SD = 1, within = 1) {
+  vector <- abs(vector - mean) # we calculate the absolute difference between each observation and the mean
+  SD <- SD*within # we set how far we can stray from the mean
+  in_vector <- ifelse(vector > SD, 0, 1) # this will give a vector where 1 is an observation within the desired number of SDs
+  prop <- sum(in_vector) / length(in_vector)
+  return(prop)
+}
+```
+
+## Method
+
+I am trying to follow an ADEMP approach but I'm unsure this part is applicable to this study. Maybe if this was comparing different generator functions?
+
+## Performance measures
+
+I am trying to follow an ADEMP approach but I'm unsure this part is applicable to this study. Maybe if this was comparing different generator functions and trying to assess the one closest to the normal distribution?
+
+# Results
+
+We first look at the proportion of observations within 1 SD for each vector. This should be around 68.
+
+```{r}
+propwithinSD(StandardNormal, 0, 1, 1)
+propwithinSD(Mean100SD50, 100, 50, 1)
+propwithinSD(Mean10SD1, 10, 1, 1)
+```
+
+We are indeed around 68%.
+
+Looking now at the proportion of observations within 2SD for each vector,
+
+```{r}
+propwithinSD(StandardNormal, 0, 1, 2)
+propwithinSD(Mean100SD50, 100, 50, 2)
+propwithinSD(Mean10SD1, 10, 1, 2)
+```
+we find they are all close to 95%, as expected.
+
+Finally, looking at the proportion of observations within 3SD for each vector,
+
+```{r}
+propwithinSD(StandardNormal, 0, 1, 3)
+propwithinSD(Mean100SD50, 100, 50, 3)
+propwithinSD(Mean10SD1, 10, 1, 3)
+```
+
+we observe they are around 99%, as expected.
+
+```{r}
+sessionInfo()
+```
+
