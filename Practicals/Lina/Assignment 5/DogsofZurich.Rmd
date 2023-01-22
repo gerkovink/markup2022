@@ -1,0 +1,27 @@
+---
+title: | 
+  ![](sticker.png)
+  Dogs of Zurich
+author: "Lina Kramer"
+date: "1/16/2023"
+output: beamer_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+require(plotly)
+require(DT)
+data <- read.csv("C:/Users/linak/Downloads/20151001hundehalter.csv")
+```
+
+## Who are they?
+
+- Zurich's cutest inhabitants
+
+
+
+
+

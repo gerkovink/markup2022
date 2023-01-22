@@ -1,0 +1,36 @@
+---
+title: "Exercise2"
+author: "Lina Kramer"
+date: "1/16/2023"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exercise 
+
+Design a study that:
+
+  a. Does something that requires RNG
+  b. Fixes the RNG seed
+  c. Replicates the results
+  d. Generates an reproducible archive/reprex/markdown
+  e. Will run on my machine without trouble (package installs may be excused)
+  f. Communicates the info of your session
+  
+```{r echo=TRUE, warning=FALSE}
+set.seed(15)  
+
+a <- sample(1:10, size = 50, replace = TRUE)
+b <- replicate(1, a)
+
+summary(a)
+summary(b)
+```
+
+```{r}
+sessionInfo()
+```
+

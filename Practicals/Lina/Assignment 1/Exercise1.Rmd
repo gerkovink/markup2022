@@ -1,0 +1,15 @@
+---
+title: "Exercise 1"
+author: "Lina Kramer"
+date: "1/11/2023"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Fun facts:
+
++ I have four siblings.
++ I love Taylor Swift.
