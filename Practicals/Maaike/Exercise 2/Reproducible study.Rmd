@@ -24,7 +24,7 @@ o <- t.test(some_variable ~ town, df)
 output <- t(o[1:3])
 ```
 
-## Replication
+## Replication of the study
 
 **Generate data**
 
