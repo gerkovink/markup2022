@@ -1,0 +1,107 @@
+---
+title: "Are Response Rates and Response Bias Related?"
+#subtitle: "Methodology and Statistics for the Behavioural, and Biomedical, and Social Sciences"
+author: Shannon Dickson
+format: 
+  revealjs: 
+    scrollable: true
+    #footer: Shannon Dickson (6369693)
+    theme: serif
+    slide-number: true
+    embed-resources: true
+    title-slide-attributes: 
+      data-background-image: "images/UU.png"
+      data-background-size: 30%
+      data-background-position: 50% 90%
+editor: visual
+---
+
+## Background {.smaller}
+
+::: r-stack
+::: {.fragment .fade-in-then-out}
+**Do you expect bias in survey estimates to increase as nonresponse rates increase?**
+:::
+
+::: {.fragment .fade-in-then-out}
+![](images/plot1.png){fig-align="center" width="600"}
+:::
+
+::: {.fragment .fade-in-then-out}
+![](images/plot4.png){fig-align="center" width="800"}
+:::
+
+::: {.fragment .fade-in-then-out}
+**So why do we need to take another look?**
+:::
+:::
+
+
+## Groves and Peytcheva (2008)[^1] {.smaller}
+
+[^1]: Groves and Peytcheva (2008). [The Impact of Nonresponse Rates on Nonresponse Bias: A Meta-Analysis](https://doi.org/10.1093/poq/nfn011)
+
+::: columns
+::: {.column width="50%"}
+::: {.fragment .fade-in}
+::: incremental
+-   **Meta-analysis:** 59 studies and 959 estimates
+-   **Leverage-Saliency Theory:**
+    -   Few main effects
+    -   Statistical interactions
+
+::: fragment
+![](images/causemodels.png){fig-align="center"}
+:::
+:::
+:::
+:::
+
+::: {.column width="50%"}
+::: {.fragment .fade-in}
+![](images/groves.png){fig-align="center"}
+:::
+:::
+:::
+
+## Current Study: Data {.smaller}
+
+::: {.fragment .fade-in-then-semi-out}
+![](images/overview2.png){fig-align="center"}
+:::
+
+## Current Study: Method {.smaller}
+
+::: incremental
+**Research Questions:**
+
+1.  Can we use network modelling to explore how survey characteristics are related?
+    -   Mixed Graphical Modelling?[^2]
+    -   Ising Model?[^3]
+2.  How are these characteristics connected to nonresponse rates *and* bias?
+    -   Between-study effects?
+    -   Within-study effects?
+    -   Cross-level interactions?
+:::
+
+[^2]: Haslbeck and Waldorp (2015). [Structure estimation for mixed graphical models in high-dimensional data](https://arxiv.org/pdf/1510.05677.pdf)
+
+[^3]: Borkulo et al. (2014). [A new method for constructing networks from binary data](10.1038/srep05918)
+
+## Network Example {.smaller}
+
+::: {.fragment .fade-in}
+![](images/qgraph.png){fig-align="center"}
+:::
+
+## 
+
+::: r-stack
+::: {.fragment .fade-in-then-out}
+**Thanks for listening!**
+:::
+
+::: {.fragment .fade-in-then-out}
+![](images/question.png){fig-align="center"}
+:::
+:::
