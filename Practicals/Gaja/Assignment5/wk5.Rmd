@@ -1,0 +1,73 @@
+---
+title: "Ferrets"
+author: "Gaja"
+output: 
+  ioslides_presentation:
+    logo: logo.png
+    css: logo.css
+bibliography: refer.bib
+---
+
+## Some info and a fake citation
+
+::: columns-2
+-   The ferret (Mustela furo) is a small, domesticated species belonging to the family Mustelidae. The ferret is most likely a domesticated form of the wild European polecat (Mustela putorius), evidenced by their interfertility. Other mustelids include the stoat, badger and mink.
+
+-   Physically, ferrets resemble other mustelids because of their long, slender bodies. Including their tail, the average length of a ferret is about 50 cm (20 in); they weigh between 0.7 and 2.0 kg (1.5 and 4.4 lb); and their fur can be black, brown, white, or a mixture of those colours. In this sexually dimorphic species, males are considerably larger than females (@lkj).
+:::
+
+## Two columns? try 2
+
+<div style="float: left; width: 50%;">
+The ferret (Mustela furo) is a small, domesticated species belonging to the family Mustelidae. The ferret is most likely a domesticated form of the wild European polecat (Mustela putorius), evidenced by their interfertility. Other mustelids include the stoat, badger and mink.
+</div>
+
+<div style="float: right; width: 50%;">
+Physically, ferrets resemble other mustelids because of their long, slender bodies. Including their tail, the average length of a ferret is about 50 cm (20 in); they weigh between 0.7 and 2.0 kg (1.5 and 4.4 lb); and their fur can be black, brown, white, or a mixture of those colours. In this sexually dimorphic species, males are considerably larger than females (@lkj).
+</div>
+
+## A cute image {.flexbox .vcenter}
+
+<img src=ferret.jpg
+     width="600" 
+     height="500" />
+     
+## A moving cute image  {.flexbox .vcenter}
+
+<img src=ferret.gif
+     width="600" 
+     height="500" />
+     
+## Some code cached, executed or else
+
+
+```{r, echo=FALSE, cache=TRUE, warning=FALSE}
+data(iris)
+require(pander)
+pander(paste0("specie = ", unique(iris$Species)), caption="Species in 
+       iris dataset.")
+```
+
+```{r, echo=TRUE, eval=FALSE}
+a = 1+1
+```
+
+## Some aligning of equations
+
+$$
+\begin{align}
+1 +1 &= 2 \\
+a + b &= c \\
+\text{something} + \text{something} &= \text{2 times something} \\
+\end{align}
+$$
+
+## Some datatabling
+
+```{r, echo=FALSE, warning=FALSE}
+require(DT)
+datatable(iris, options = list(pageLength = 5))
+```
+
+
+## Literature
