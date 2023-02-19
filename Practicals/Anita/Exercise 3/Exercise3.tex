@@ -1,0 +1,110 @@
+%\documentclass[aspectratio=43]{beamer} %4:3 ratio presentatie
+\documentclass[aspectratio=169]{beamer} %16:9 ratio presentatie
+
+
+\usetheme[]{default}
+\usecolortheme{beaver}
+\usepackage{tikz}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\beamertemplatenavigationsymbolsempty %suppress navigation bar
+\definecolor{light-gray}{gray}{0.1}
+
+%TITLEPAGE
+\title[Example] {Example document to recreate with \texttt{beamer} in \LaTeX}
+
+\author[Your Name]
+{
+ Your~Name
+}
+
+\date[MLRPS]
+{\vspace{.5 in}\\ FALL 2022 \\ Markup Languages and Reproducible Programming in Statistics  \vskip6mm}
+
+
+
+\begin{document}
+\titlepage
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents
+\end{frame}
+
+%%%%%%%%%
+\section{Working with equations}
+\begin{frame}
+\frametitle{Working with equations}
+    We define a set of equations as
+    \begin{equation}
+        a=b+c^2,
+    \end{equation}
+    \begin{equation}
+    	a-c^2=b,
+    \end{equation}
+    \begin{equation}
+    	\text{left side} = \text{right side},
+    \end{equation}
+    \begin{equation}
+    	\text{left side} + \text{something} \geq \text{right side},
+    \end{equation}
+    for all $\text{something} > 0$. 
+\end{frame}
+
+%%%%%%%%%%
+\subsection{Aligning the same equations}
+\begin{frame}
+\frametitle{Aligning the same equations}
+    Aligning the equations by the equal sign gives a much better view into the placements of the separate equation components. 
+    \begin{align}
+    	a&=b+c^2,\\
+    	a-c^2&=b,\\
+    	\text{left side} &= \text{right side},\\
+    	\text{left side} + \text{something} & \geq \text{right side},
+    \end{align}
+\end{frame}
+
+%%%%%%%%%%
+\subsection{Omit equation numbering}
+\begin{frame}
+\frametitle{Omit equation numbering}
+    Alternatively, the equation numbering can be omitted. 
+    \begin{align*}
+    	a&=b+c^2\\
+    	a-c^2&=b\\
+    	\text{left side} &= \text{right side}\\
+    	\text{left side} + \text{something} & \geq \text{right side}
+    \end{align*}
+\end{frame}
+
+%%%%%%%%%%
+\subsection{Ugly alignment}
+\begin{frame}
+\frametitle{Ugly alignment}
+Some components do not look well, when aligned. Especially equations with different heights and spacing. For example, 
+\begin{align}
+E&=mc^2,\\
+m&=\frac{E}{c^2},\\
+c&=\sqrt{\frac{E}{m}}.
+\end{align}
+Take that into account. 
+\end{frame}
+
+%%%%%%%%%%
+\section{Discussion}
+\begin{frame}
+\frametitle{Discussion}
+This is where you'd normally give your audience a recap of your talk, where you could discuss e.g. the following
+\begin{itemize}
+\item Your main findings
+\item The consequences of your main findings
+\item Things to do
+\item Any other business not currently investigated, but related to your talk
+\end{itemize}
+\end{frame}
+
+
+\end{document}
+
