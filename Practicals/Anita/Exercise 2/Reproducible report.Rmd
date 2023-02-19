@@ -1,0 +1,48 @@
+---
+title: "Exercise 2"
+author: "Anita Lyubenova"
+date: "2023-02-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+library(kableExtra)
+```
+
+Run the simulation or load the results from the simulation
+```{r}
+source(paste0(dirname(rstudioapi::getSourceEditorContext()$path), "/RNG.R"))
+#load(paste0(dirname(rstudioapi::getSourceEditorContext()$path), "/workspace.RData"))
+```
+
+Plot of each sample with its mean and 95% confidence interval
+```{r}
+results %>% 
+  ggplot(aes(x=sample)) + 
+  geom_point(aes(y=mean))+
+  geom_errorbar(aes(ymin=CI_lb, ymax=CI_ub))+
+  geom_hline(yintercept = mu, linetype="dashed")+
+  coord_flip()
+```
+
+Table of the samples whose confidence interval do not contain the true value
+
+```{r}
+results %>% 
+  filter(CI_lb>mu | CI_ub<mu) %>% 
+  mutate_if(is.numeric, function(x) round(x, digits=2)) %>% 
+  kbl() %>% 
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+Session info
+```{r}
+session
+```
+
