@@ -1,0 +1,144 @@
+---
+title: "Why I Would Stick to PowerPoint"
+subtitle: |
+    ![](logo_uu.png){width=3in}
+author: "Anita Lyubenova"
+date: "`r Sys.Date()`"
+output: slidy_presentation
+bibliography: ref.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(visNetwork)
+library(DT)
+```
+
+## Tasks
+
+-   ~~a logo~~
+-   ~~a centered still figure~~
+-   ~~an interactive table~~
+-   ~~a moving figure, interactive figure or movie~~
+-   ~~a 2-column slide~~
+-   ~~an aligned multi-row equation~~
+-   a citation and reference list
+-   ~~r-code, displayed but not executed~~
+-   ~~cached r-code (may overlap with the next requirement)~~
+-   ~~r-code, executed, but not displayed (e.g. a figure generation)~~
+
+## Positioning of elements
+
+<div style="font-size: 56px;line-height: 1.5; margin-left:40px; margin-bottom: -20px;">
+
+I like my presentations visual
+</div>
+
+
+<center>
+<img style="transform: rotate(270deg);"
+     src="figures/arrow.png" >
+</center>
+
+<div style="font-size: 30px;line-height: 1.5; width: 50%; margin-left:30%; text-align:center;">
+To guide the attention of the audience I use arrows, pop-ups, and text with different formatting
+<br>
+</div>
+
+
+<div style="font-size: 25px;line-height: 1.5; border-color:red; border-style: solid;">
+
+This slide can be made very quickly in PowerPoint (or any other drag-and-drop program). Making it in Rmarkdown involved google-ing a bunch of CSS commands, troubleshooting when some of them did not work, and waiting for the document to knit after every small change in the code. Positioning the elements will be exponentially more time consuming with the number of elements. And sometimes I do have many elements (see next slide).
+
+</div>
+
+## Incremental slides
+
+<center>
+<img src="figures/Example.png" >
+</center>
+
+<div style="font-size: 25px;line-height: 1.5; border-color:red; border-style: solid;">
+
+Note: this is a screenshot of a slide from one of my presentations that had many elements (for further reading on Bayesian evidecnce synthesis, see @doi:10.1177/0049124112464867 They were showing up/getting colored incrementally while I was presenting - a feature that seems to work only for bullet points in slidy and ioslides presentations.
+</div>
+
+
+## Interactivity
+
+One of the advantages is the possibility to implement interactive plots. However, despite being cool, they can be quite confusing for the audience and cause an information overload. 
+```{r, cache, echo=FALSE}
+ nodes <-  xfun::cache_rds({
+             jsonlite::fromJSON("https://raw.githubusercontent.com/datastorm-open/datastorm-open.github.io/master/visNetwork/data/nodes_miserables.json")
+})
+
+ edges <-  xfun::cache_rds({
+            jsonlite::fromJSON("https://raw.githubusercontent.com/datastorm-open/datastorm-open.github.io/master/visNetwork/data/edges_miserables.json")
+
+})
+
+
+visNetwork(nodes, edges, height = "700px", width = "100%",
+            main = "Les miserables",
+           footer = paste0("From: ", "https://datastorm-open.github.io/visNetwork/options.html")) %>%
+  visOptions(selectedBy = "group", 
+             highlightNearest = TRUE, 
+             nodesIdSelection = TRUE) %>%
+  visPhysics(stabilization = FALSE)
+```
+
+## R code
+While it is generally useful to show R code, the formatting is not that nice and will cost additional time to fix. (code for the interactive plot above)
+
+```{r, echo=TRUE, eval=FALSE}
+ nodes <-  jsonlite::fromJSON("https://raw.githubusercontent.com/datastorm-open/datastorm-open.github.io/master/visNetwork/data/nodes_miserables.json")
+
+ edges <-  jsonlite::fromJSON("https://raw.githubusercontent.com/datastorm-open/datastorm-open.github.io/master/visNetwork/data/edges_miserables.json")
+
+visNetwork(nodes, edges, height = "700px", width = "100%",
+            main = "Les miserables",
+           footer = paste0("From: ", "https://datastorm-open.github.io/visNetwork/options.html")) %>%
+  visOptions(selectedBy = "group", 
+             highlightNearest = TRUE, 
+             nodesIdSelection = TRUE) %>%
+  visPhysics(stabilization = FALSE)
+```
+
+
+## Tables - Yay!
+Creating good-looking tables is indeed easier than with PowerPoint! It spares you the copy-pasting of numbers.  Yet again, I don't find the interactivity too useful. 
+
+```{r,echo=FALSE}
+datatable(head(iris))
+```
+
+
+
+## Equations - Yay!
+Being able to write equations in latex is another useful feature of R Markdown presentations. I have often wished they had it in PowerPoint.
+
+\begin{align*}
+Y \sim X\beta_0 + X\beta_1 + &\epsilon, \\
+&\epsilon \sim N(0,\sigma^2)
+\end{align*}
+
+
+## Conclusion
+
+Even though I really enjoy working with R, I do not yet consider creating presentations with R Markdown to be worthwhile for my purposes. Designing the slides is more time-consuming, my creativity is hampered by technical hiccups, and the end result is not a better presentation.
+
+## Taking a broader perspective
+
+<div style="float: left; width: 45%;font-size: 40px;line-height: 1.7;">
+For this presentation, I considered only the type of presentations I most commonly make - concise presentations that aim to convey a specific message or be persuasive, knowing that the audience will not make use of the slides later on. 
+      
+</div>
+
+<div style="float: right; width: 45%;font-size: 40px;line-height: 2;">
+I acknowledge that R Markdown may have higher value when the purposes are different. For instance, in teaching materials interactivity would be more advantageous, as the students would study the slides after the lecture.
+</div>
+
+## References
