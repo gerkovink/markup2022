@@ -17,18 +17,6 @@ library(visNetwork)
 library(DT)
 ```
 
-## Tasks
-
--   ~~a logo~~
--   ~~a centered still figure~~
--   ~~an interactive table~~
--   ~~a moving figure, interactive figure or movie~~
--   ~~a 2-column slide~~
--   ~~an aligned multi-row equation~~
--   a citation and reference list
--   ~~r-code, displayed but not executed~~
--   ~~cached r-code (may overlap with the next requirement)~~
--   ~~r-code, executed, but not displayed (e.g. a figure generation)~~
 
 ## Positioning of elements
 
